@@ -1,0 +1,23 @@
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::       (v4.0.0-SNAPSHOT)
+
+2025-10-27T11:29:49.715+09:00  INFO 21412 --- [lostarkAPI] [           main] o.e.character.api.LostArkApplication     : Starting LostArkApplication v0.0.1-SNAPSHOT using Java 17.0.11 with PID 21412 (C:\myProject\lostarkAPI\build\libs\demo-0.0.1-SNAPSHOT.war started by user in C:\myProject\lostarkAPI)
+2025-10-27T11:29:49.723+09:00  INFO 21412 --- [lostarkAPI] [           main] o.e.character.api.LostArkApplication     : No active profile set, falling back to 1 default profile: "default"
+2025-10-27T11:29:50.423+09:00  INFO 21412 --- [lostarkAPI] [           main] o.s.boot.tomcat.TomcatWebServer          : Tomcat initialized with port 8080 (http)
+2025-10-27T11:29:50.433+09:00  INFO 21412 --- [lostarkAPI] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2025-10-27T11:29:50.434+09:00  INFO 21412 --- [lostarkAPI] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/11.0.13]
+2025-10-27T11:29:51.622+09:00  INFO 21412 --- [lostarkAPI] [           main] org.apache.jasper.servlet.TldScanner     : At least one JAR was scanned for TLDs yet contained no TLDs. Enable debug logging for this logger for a complete list of JARs that were scanned but no TLDs were found in them. Skipping unneeded JARs during scanning can improve startup time and JSP compilation time.
+2025-10-27T11:29:51.964+09:00  INFO 21412 --- [lostarkAPI] [           main] b.w.c.s.WebApplicationContextInitializer : Root WebApplicationContext: initialization completed in 2191 ms
+2025-10-27T11:29:52.446+09:00  INFO 21412 --- [lostarkAPI] [           main] o.s.boot.tomcat.TomcatWebServer          : Tomcat started on port 8080 (http) with context path '/'
+2025-10-27T11:29:52.460+09:00  INFO 21412 --- [lostarkAPI] [           main] o.e.character.api.LostArkApplication     : Started LostArkApplication in 3.138 seconds (process running for 3.603)
+2025-10-27T11:29:52.957+09:00  INFO 21412 --- [lostarkAPI] [nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-10-27T11:29:52.957+09:00  INFO 21412 --- [lostarkAPI] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2025-10-27T11:29:52.958+09:00  INFO 21412 --- [lostarkAPI] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
+2025-10-27T11:33:53.851+09:00  WARN 21412 --- [lostarkAPI] [nio-8080-exec-7] .w.s.m.s.DefaultHandlerExceptionResolver : Resolved [org.springframework.web.HttpRequestMethodNotSupportedException: Request method 'POST' is not supported]
