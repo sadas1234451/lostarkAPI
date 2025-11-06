@@ -1,39 +1,172 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>캐릭터 정보 검색 결과</title>
-</head>
-<body>
+    <meta charset="UTF-8">
+     <title th:text="${searchStatus == 'success' ? mainCharacter + ' 님 검색결과' : '캐릭터 정보 검색 결과'}">캐릭터 정보 검색 결과</title>
 
-    <h1 th:text="${mainCharacter.characterName} + ' 님의 형제 캐릭터 목록'">[캐릭터 이름] 님의 형제 캐릭터 목록</h1>
-
-    <div th:if="${searchStatus == 'failure'}" style="color: red;">
-        <p th:text="${errorMessage}">오류 메시지</p>
-    </div>
-
-    <div th:if="${searchStatus == 'success'}">
-        <h2>캐릭터 목록</h2>
+    <script src="https://cdn.tailwindcss.com">    </script>
+    <style>
         
-        <table>
-            <thead>
-                <tr>
-                    <th>이름</th>
-                    <th>직업</th>
-                    <th>캐릭터 레벨</th>
-                    <th>아이템 레벨</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr th:each="item : ${siblingsList}">
-                    <td th:text="${item.characterName}">홍길동</td>
-                    <td th:text="${item.job}">전사</td>
-                    <td th:text="${item.level}">60</td>
-                    <td th:text="${item.itemLevel}">1620.00</td>
-                </tr>
-            </tbody>
-        </table>
-        
-    </div>
+    input[type="radio"] { display: none; }
+
+    label[for*="tab"] {
+        display: inline-block;
+        padding: 1.5rem 2rem; 
+        background: #f3f4f6; 
+        color: #4b5563;
+        margin: 0;
+        border-radius: 0; 
+        cursor: pointer;
+        font-weight: 500; 
+        transition: all 0.2s;
+       
+    }
+
     
+    input[type="radio"]:checked + label {
+        background: #ffffff; 
+        color: #1f2937; 
+        font-weight: 600; 
+        box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1); 
+    }
+    
+    .conbox {
+        padding: 20px;
+        display: none;
+        background-color: #ffffff; 
+        border-top: none; 
+    }
+    
+    #tab01:checked ~ .con1,
+    #tab02:checked ~ .con2 {
+        display: block; 
+    }
+</style>
+    </head>
+<body class="bg-gray-50 font-sans p-8">
+   <div th:replace="~{header :: header}"></div>
+
+        <h3 th:if="${searchStatus == 'success'}"><a th:text="|${mainCharacter} 님|">캐릭터 이름</a></h3>
+        <h3 th:unless="${searchStatus == 'success'}">캐릭터 검색 결과</h3>
+    <div class="tab_content item-center justify-center text-center">
+        
+        
+            <input type="radio" name="tabmenu" id="tab01" checked >
+            <label for="tab01">캐릭터 상세 정보</label>
+            <input type="radio" name="tabmenu" id="tab02">
+            <label for="tab02">보유 캐릭터 목록</label>
+        
+        <!-- ================캐릭터 상세정보====================== -->
+        <!-- 캐릭터 다양한 상세 정보 받아오기 -->
+        <!-- 전투력 및 닉네임 표시  -->
+           
+           
+            <div class="conbox con1">
+                
+                <div th:if="${weaponAndArmorItems != null or accessoryAndSpecialItems != null}" class="flex flex-col lg:flex-row gap-6 justify-center">
+                    <div class="lg:w-1/4 p-4 bg-white border border-gray-200 rounded-lg shadow-sm space-y-4"> 
+                        <h2 class="text-2xl font-bold mb-4 text-center ">장비</h2>
+                        
+                        <div th:each="item : ${weaponAndArmorItems}"
+                            class="p-3 rounded-lg flex space-x-3 items-center text-start">
+                            
+                            <img th:src="${item.Icon}" alt="아이템 아이콘" class="w-10 h-10 rounded-lg flex-shrink-0 bg-amber-100 align-middle" onerror="this.onerror=null;this.src='https://placehold.co/64x64'">
+                             
+                            <div class="flex-grow">
+                                <div th:if="${item.ItemTitle != null and !#strings.isEmpty(item.ItemTitle)}" class="text-xs text-gray-500 " th:utext="|${item.ItemTitle}|"></div>
+                                
+                                <div class="flex items-baseline"> 
+                                    <span th:if="${item.SingleTextBox != null and !#strings.isEmpty(item.SingleTextBox)}"
+                                        class="text-xs text-yellow-600 font-bold mr-1"  th:text="${item.SingleTextBox + '단계'}">
+                                    </span>
+
+                                    <span class="text-xs font-semibold text-gray-900" th:utext="${item.NameTagBox}"> 
+                                    </span>
+                                </div>
+
+                                <div th:if="${item.IndentStringGroup != null or item.IndentStringGroupWeapon != null}" class="text-xs text-red-600  whitespace-nowrap " >
+                                    <img th:src="@{/img/Indentstring.png}" alt="초월 아이콘" class="inline-block w-3 h-4 align-middle ">
+                                    <span th:if="${item.Type == '무기' and item.IndentStringGroupWeapon != null and !#strings.isEmpty(item.IndentStringGroupWeapon)}"
+                                        th:utext="|초월 : ${item.IndentStringGroupWeapon}|" ></span>
+                                            
+                                    <span th:if="${item.Type != '무기' and item.IndentStringGroup != null and !#strings.isEmpty(item.IndentStringGroup)}"
+                                        th:utext="|초월 : ${item.IndentStringGroup}|" ></span>
+                                </div>
+                                <div th:if="${item.Type != '무기' and item.elixirOption1 != null and !#strings.isEmpty(item.elixirOption1)}" class="text-xs font-bold text-orange-500">
+                                    <span th:text="${item.elixirOption1}"></span>
+                                </div>
+                                <div th:if="${item.Type != '무기' and item.elixirOption2 != null and !#strings.isEmpty(item.elixirOption2)}" class="text-xs font-bold text-orange-500">
+                                    <span th:text="${item.elixirOption2}"></span>
+                                </div>
+                            </div>
+                            
+                            
+                        </div>
+                        
+                    </div>
+                    <div class="lg:w-1/4 p-4 bg-white border border-gray-200 rounded-lg shadow-sm space-y-4">
+                        <h2 class="text-2xl font-bold mb-4 text-center">악세서리</h2>
+
+                        <div th:each="item : ${accessoryAndSpecialItems}"
+                            class="p-3 rounded-lg flex space-x-3 items-center text-start">
+                            
+                            <img th:src="${item.Icon}" alt="아이템 아이콘" class="w-10 h-10 rounded-lg flex-shrink-0 bg-amber-100 " onerror="this.onerror=null;this.src='https://placehold.co/64x64'">
+
+                            <div class="flex-grow">
+                                <p class="text-base font-semibold text-gray-800 leading-snug" th:utext="${item.NameTagBox}" hidden></p>
+
+                                <div th:if="${item.ItemTitle != null and !#strings.isEmpty(item.ItemTitle)}" class="text-xs text-gray-500 mt-1" th:utext="${item.ItemTitle}" hidden></div>
+                                
+                                <div th:if="${item.ItemPartBasicBox != null and !#strings.isEmpty(item.ItemPartBasicBox)}" class="text-xs text-black-600 mt-1" th:utext="${item.ItemPartBasicBox}"></div>
+                                <div th:if="${item.ItemPartOptionalBox != null and !#strings.isEmpty(item.ItemPartOptionalBox)}" class="text-xs text-yellow-600" th:utext="${item.ItemPartOptionalBox}" hidden></div>
+                                
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+                   
+                <!-- 장비 목록이 없거나 로딩 중일 때 표시할 메시지 -->
+                <div th:unless="${(weaponAndArmorItems != null and !#lists.isEmpty(weaponAndArmorItems)) or (accessoryAndSpecialItems != null and !#lists.isEmpty(accessoryAndSpecialItems))}"
+                    class="p-4 text-center text-base font-medium text-yellow-800 bg-yellow-100 rounded-lg">
+                    <span th:if="${searchStatus == 'success'}">장비 상세 정보를 가져오지 못했거나 장비가 없습니다.</span>
+                    <span th:unless="${searchStatus == 'success'}">캐릭터 정보를 불러오는 중입니다...</span>
+                </div>
+                
+            </div>
+        <!-- ================보유 캐릭터 목록====================== -->
+        <!-- 보유 중인 캐릭터 누르면 그 캐릭터 정보 창으로 넘어가기  -->
+        <!-- 갱신 버튼 -->
+        <div class="conbox con2">
+             <div th:if="${searchStatus == 'failure'}" 
+                    class="p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-lg" role="alert">
+                    <p th:text="${errorMessage}">오류 메시지</p>
+                </div>
+                
+                <div th:if="${searchStatus == 'success'}">
+                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                        
+                        <a th:each="item : ${siblingsList}" 
+                            th:href="@{/character_Info(characterName=${item.characterName})}"
+                            class="flex flex-col items-center p-4 bg-gray-50 border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition duration-200">
+                                    
+                            <span th:text="${item.characterName}" 
+                                class="text-base font-bold text-gray-900 truncate w-full text-center mb-1">홍길동</span>
+                                    
+                            <span th:text="${item.job}" 
+                                class="text-sm text-gray-600">전사</span>
+                                    
+                            <span th:text="|Lv. ${item.level}|" 
+                                class="text-xs text-gray-500 mt-1">Lv. 60</span>
+                                            
+                            <span th:text="|아이템 레벨: ${item.itemLevel}|" 
+                                class="text-sm font-semibold text-indigo-600 mt-1">I-Lv. 1620.00</span>
+                                    
+                        </a>
+                    </div>
+                </div> 
+            </div>
+
+    </div>
 </body>
 </html>
