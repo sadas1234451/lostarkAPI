@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>캐릭터 정보 검색 결과</title>
+</head>
+<body>
+
+    <h1 th:text="${mainCharacter.characterName} + ' 님의 형제 캐릭터 목록'">[캐릭터 이름] 님의 형제 캐릭터 목록</h1>
+
+    <div th:if="${searchStatus == 'failure'}" style="color: red;">
+        <p th:text="${errorMessage}">오류 메시지</p>
+    </div>
+
+    <div th:if="${searchStatus == 'success'}">
+        <h2>캐릭터 목록</h2>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>이름</th>
+                    <th>직업</th>
+                    <th>캐릭터 레벨</th>
+                    <th>아이템 레벨</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="item : ${siblingsList}">
+                    <td th:text="${item.characterName}">홍길동</td>
+                    <td th:text="${item.job}">전사</td>
+                    <td th:text="${item.level}">60</td>
+                    <td th:text="${item.itemLevel}">1620.00</td>
+                </tr>
+            </tbody>
+        </table>
+        
+    </div>
+    
+</body>
+</html>

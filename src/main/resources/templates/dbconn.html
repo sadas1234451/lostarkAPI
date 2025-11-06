@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>MySQL 연동</title>
+</head>
+<body>
+    <h1>데이터베이스 연결 테스트</h1>
+    <p th:if="${connected}">✅ 데이터베이스 연결 성공!</p>
+    <p th:unless="${connected}">❌ 데이터베이스 연결 실패!</p>
+</body>
+</html>
