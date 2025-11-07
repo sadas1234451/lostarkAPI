@@ -6,6 +6,10 @@
 
     <script src="https://cdn.tailwindcss.com">    </script>
     <style>
+    @import url('https://fonts.googleapis.com/css2?family=Jua&display=swap');
+    body {
+    font-family: 'Jua', sans-serif !important;
+    }
         
     input[type="radio"] { display: none; }
 
@@ -57,24 +61,31 @@
             <label for="tab02">보유 캐릭터 목록</label>
         
         <!-- ================캐릭터 상세정보====================== -->
-        <!-- 캐릭터 다양한 상세 정보 받아오기 -->
-        <!-- 전투력 및 닉네임 표시  -->
-           
-           
             <div class="conbox con1">
+                <!-- 전투력 및 닉네임 표시  -->
                 
+
+
+
+
+
+
+
+        
+                <!-- 캐릭터 다양한 상세 정보 받아오기 -> 장비이름, 아이템 레벨, 아이콘, 초월 단계 및 갯수, 상급재련, 엘릭서, 어빌리티스톤 효과, 악세사리 효과, 팔찌 기본옵션 및 부여옵션  -->
+                <!-- weaponAndArmorItems 는 MainController.java에서 설정한 변수.  -->
                 <div th:if="${weaponAndArmorItems != null or accessoryAndSpecialItems != null}" class="flex flex-col lg:flex-row gap-6 justify-center">
-                    <div class="lg:w-1/6 p-4 bg-white border border-gray-200 rounded-lg shadow-sm space-y-4"> 
+                    <div class="lg:w-1/3 p-4 bg-white border border-gray-200 rounded-lg shadow-sm space-y-4"> 
                         <h2 class="text-2xl font-bold mb-4 text-center ">장비</h2>
-                        
+                        <!-- weaponAndArmorItems를 쉽게 사용하기 위해 item으로 재정의 -->
                         <div th:each="item : ${weaponAndArmorItems}"
                             class="p-3 rounded-lg flex space-x-3 items-center text-start">
                             
                             <img th:src="${item.Icon}" alt="아이템 아이콘" class="w-10 h-10 rounded-lg flex-shrink-0 bg-amber-100 align-middle" onerror="this.onerror=null;this.src='https://placehold.co/64x64'">
-                             
+                             <!-- 아이템 레벨 불러오기  -->
                             <div class="flex-grow w-full">
-                                <div th:if="${item.ItemTitle != null and !#strings.isEmpty(item.ItemTitle)}" class="text-xs text-gray-500 " th:utext="|${item.ItemTitle}|"></div>
-                                
+                                <div th:if="${item.ItemTitle != null and !#strings.isEmpty(item.ItemTitle)}" class="text-xs text-gray-500 font-semibold" th:utext="|${item.ItemTitle}|"></div>
+                            <!-- 상급재련 단계 + 아이템 이름(강화표시 포함) -->
                                 <div class="flex items-baseline"> 
                                     <span th:if="${item.SingleTextBox != null and !#strings.isEmpty(item.SingleTextBox)}"
                                         class="text-xs text-yellow-600 font-bold mr-1"  th:text="${item.SingleTextBox + '단계'}">
@@ -83,8 +94,8 @@
                                     <span class="text-xs font-semibold text-gray-900" th:utext="${item.NameTagBox}"> 
                                     </span>
                                 </div>
-
-                                <div th:if="${item.IndentStringGroup != null or item.IndentStringGroupWeapon != null}" class="text-xs text-red-600  whitespace-nowrap " >
+                                    <!-- 초월 단계 및 갯수 -->
+                                <div th:if="${item.IndentStringGroup != null or item.IndentStringGroupWeapon != null}" class="text-xs text-red-600  whitespace-nowrap font-semibold" >
                                     <img th:src="@{/img/Indentstring.png}" alt="초월 아이콘" class="inline-block w-3 h-4 align-middle ">
                                     <span th:if="${item.Type == '무기' and item.IndentStringGroupWeapon != null and !#strings.isEmpty(item.IndentStringGroupWeapon)}"
                                         th:utext="|초월 : ${item.IndentStringGroupWeapon}|" ></span>
@@ -94,16 +105,19 @@
                                 </div>
 
                                 <div  class="flex flex-wrap text-xs font-bold text-orange-500 "> 
+                                    <!-- 엘릭서 옵션 1 -->
                                     <span th:if="${item.Type != '무기' and item.elixirOption1 != null and !#strings.isEmpty(item.elixirOption1)}"
                                         th:text="${item.elixirOption1}"></span>
                                     
+                                        <!-- 공간 분리 "/"  -->
                                     <th:block th:if="${item.Type != '무기' and item.elixirOption2 != null and !#strings.isEmpty(item.elixirOption2)}">
                                         &nbsp;/&nbsp;
                                     </th:block>
+                                    <!-- 무기는 엘릭서 옵션 공간에 초월 총 갯수 적혀있음. 그래서 무기 엘릭서 부분에 총 초월 갯수 표시 -->
                                     <th:block th:if="${item.Type == '무기' and item.elixirOption2 != null and !#strings.isEmpty(item.elixirOption2)}">
                                         <img th:src="@{/img/Indentstring.png}" alt="초월 아이콘" class="inline-block w-3 h-4 align-middle "/>
                                     </th:block>
-                                    
+                                    <!-- 엘릭서 옵션 2 -->
                                     <span th:if="${item.elixirOption2 != null and !#strings.isEmpty(item.elixirOption2)}"
                                         th:text="${item.elixirOption2}"></span>
                                 </div>
@@ -113,27 +127,39 @@
                         </div>
                         
                     </div>
-                    <div class="lg:w-1/6 p-4 bg-white border border-gray-200 rounded-lg shadow-sm space-y-4">
+                    <div class="lg:w-1/3 p-4 bg-white border border-gray-200 rounded-lg shadow-sm space-y-4">
                         <h2 class="text-2xl font-bold mb-4 text-center">악세서리</h2>
 
                         <div th:each="item : ${accessoryAndSpecialItems}"
-                            class="p-3 rounded-lg flex space-x-3 items-center text-start">
-                            
-                            <img th:src="${item.Icon}" alt="아이템 아이콘" class="w-10 h-10 rounded-lg flex-shrink-0 bg-amber-100 " onerror="this.onerror=null;this.src='https://placehold.co/64x64'">
+                            class="p-3 rounded-lg text-start"
+                            th:classappend="${item.Type == '팔찌' ? 'space-y-1' : 'flex space-x-3 items-center'}"> 
+                            <!-- 아이콘 -->
+                            <img th:src="${item.Icon}" alt="아이템 아이콘" class="w-10 h-10 rounded-lg flex-shrink-0 bg-amber-100" onerror="this.onerror=null;this.src='https://placehold.co/64x64'">
 
-                            <div class="flex-grow">
+                            <div th:class="${item.Type != '팔찌' ? 'flex-grow' : 'space-y-1'} "> 
                                 <p class="text-base font-semibold text-gray-800 leading-snug" th:utext="${item.NameTagBox}" hidden></p>
-
-                                <div th:if="${item.ItemTitle != null and !#strings.isEmpty(item.ItemTitle)}" class="text-xs text-gray-500 mt-1" th:utext="${item.ItemTitle}" hidden></div>
+                                <!-- 아이템 이름 -->
+                                <div th:if="${item.ItemTitle != null and !#strings.isEmpty(item.ItemTitle)}" class="text-xs text-gray-500 mt-1 font-semibold" th:utext="${item.ItemTitle}" hidden></div>
                                 
-                                <div th:if="${item.ItemPartBasicBox != null and !#strings.isEmpty(item.ItemPartBasicBox)}" class="text-xs text-black-600 mt-1" th:utext="${item.ItemPartBasicBox}"></div>
-                                <div th:if="${item.ItemPartOptionalBox != null and !#strings.isEmpty(item.ItemPartOptionalBox)}" class="text-xs text-yellow-600" th:utext="${item.ItemPartOptionalBox}" hidden></div>
+                                <!-- 악세사리 효과 -->
+                                <div th:if="${item.ItemPartBasicBox != null and !#strings.isEmpty(item.ItemPartBasicBox)}" class="text-xs text-black-600 mt-1 font-semibold" th:utext="${item.ItemPartBasicBox}"></div>
+                                <div th:if="${item.ItemPartOptionalBox != null and !#strings.isEmpty(item.ItemPartOptionalBox)}" class="text-xs text-yellow-600 font-semibold" th:utext="${item.ItemPartOptionalBox}" hidden></div>
                                 
+                                
+                                <!-- 팔찌 기본 옵션 / 부여 옵션 -->
+                                <div th:if="${item.BraceletOption != null and !#strings.isEmpty(item.BraceletOption)}" 
+                                    class="text-xs text-black-600 mt-1 font-semibold" th:utext="${item.BraceletOption}"></div> 
+                                <div th:if="${item.BraceletPartOption != null and !#strings.isEmpty(item.BraceletPartOption)}" 
+                                    class="text-xs text-black-600 mt-1 font-semibold" th:utext="${item.BraceletPartOption}"></div>
+                                <!-- 어빌리티 스톤 각인 레벨 표시 -->
+                                <div th:if="${item.Type == '어빌리티 스톤' and item.AbilityStone != null and !#strings.isEmpty(item.AbilityStone)}"
+                                    class="text-xs text-black-600 mt-1 font-semibold" th:utext="${item.AbilityStone}">
+                                </div>
                             </div>
-
                         </div>
                     </div>
                 </div>
+            </div>
                    
                 <!-- 장비 목록이 없거나 로딩 중일 때 표시할 메시지 -->
                 <div th:unless="${(weaponAndArmorItems != null and !#lists.isEmpty(weaponAndArmorItems)) or (accessoryAndSpecialItems != null and !#lists.isEmpty(accessoryAndSpecialItems))}"
