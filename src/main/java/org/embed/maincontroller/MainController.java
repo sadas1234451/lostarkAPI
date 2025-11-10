@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.embed.DBService.CharacterData;
+import org.embed.TooltipProcessing.ProfileTooltipParsing;
 import org.embed.TooltipProcessing.TooltipParsing;
 import org.embed.service.CharacterService;
 import org.springframework.stereotype.Controller;
@@ -85,7 +86,16 @@ public class MainController {
         } else {
             log.warn("캐릭터 [{}]의 장비 상세 정보를 가져오지 못했거나 파싱에 실패했습니다.", characterName);
         }
-    
+        
+        ProfileTooltipParsing profile = characterService.profiles(characterName);
+        if(profile != null ){
+            model.addAttribute("fatal", profile.getFatal());
+             model.addAttribute("Specialization", profile.getSpecialization());
+              model.addAttribute("speed", profile.getSpeed());
+            log.info("캐릭터 [{}]의 치명 영구 증가량: {}", characterName, profile.getFatal());
+            log.info("캐릭터 [{}]의 특화 영구 증가량: {}", characterName, profile.getSpecialization());
+            log.info("캐릭터 [{}]의 신속 영구 증가량: {}", characterName, profile.getSpeed());
+        }
     return "character_Info";
     }
 }

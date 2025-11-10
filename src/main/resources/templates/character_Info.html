@@ -50,7 +50,6 @@
 <body class="bg-gray-50 font-sans p-8">
    <div th:replace="~{header :: header}"></div>
 
-        <h3 th:if="${searchStatus == 'success'}"><a th:text="|${mainCharacter} 님|">캐릭터 이름</a></h3>
         <h3 th:unless="${searchStatus == 'success'}">캐릭터 검색 결과</h3>
     <div class="tab_content item-center justify-center text-center" >
         
@@ -76,23 +75,23 @@
                         </div>
                             
                         <div class="flex-1 p-4 border-2 border-red-500 rounded-md text-center ml-1 mr-1 mx-auto flex flex-col">
-                            <span class="text-xl font-bold mb-4 text-center">전투력 </span>
+                            <span class="text-xl font-semibold mb-4 text-center">전투력 </span>
                             <!-- 전투력 넣기  프로필 우선-->
                             <span class="text-2xl font-semibold mb-4 text-red-600">1650.00</span>
                             <!-- 랭킹 끌어와 넣긴(API 검색기능에 있으면, 없으면 스킾) -->
-                            <span class="text-2xl font-semibold  mb-4" th:utext="|랭킹(${mainCharacter})| ">신속 : </span>
+                            <span class="text-2xl font-semibold  mb-4" th:utext="|랭킹(${mainCharacter})| "> </span>
                         </div>
 
                         <div class="flex-1 p-4 border-2 border-red-500 rounded-md text-center ml-2 mx-auto flex flex-col ">
-                            <span class="text-xl font-bold mb-4 text-center">상세 스텟 </span>
+                            <span class="text-xl font-semibold mb-4 text-center">상세 스텟 </span>
                             <!-- 치특신끌어와서 넣기 -->
-                            <span class="text-2xl font-semibold text-blue-500" th:utext="|특화 :  ${mainCharacter}|">치명 : </span>
-                            <span class="text-2xl font-semibold text-blue-500" th:utext="|치명 :  ${mainCharacter}|">특화 : </span>
-                            <span class="text-2xl font-semibold text-blue-500" th:utext="|신속 :  ${mainCharacter}| ">신속 : </span>
+                            <span class="text-2xl font-semibold text-blue-500" th:utext="|특화 :  ${Specialization}|">치명 : </span>
+                            <span class="text-2xl font-semibold text-blue-500" th:utext="|치명 :  ${fatal}|">특화 : </span>
+                            <span class="text-2xl font-semibold text-blue-500" th:utext="|신속 :  ${speed}| ">신속 : </span>
                         </div>
                         
                     </div>
-                </div>>
+                </div>
                 <!-- 캐릭터 다양한 상세 정보 받아오기 -> 장비이름, 아이템 레벨, 아이콘, 초월 단계 및 갯수, 상급재련, 엘릭서, 어빌리티스톤 효과, 악세사리 효과, 팔찌 기본옵션 및 부여옵션  -->
                 <!-- weaponAndArmorItems 는 MainController.java에서 설정한 변수.  -->
                 <div th:if="${weaponAndArmorItems != null or accessoryAndSpecialItems != null}" class="flex flex-col lg:flex-row gap-1 justify-center">

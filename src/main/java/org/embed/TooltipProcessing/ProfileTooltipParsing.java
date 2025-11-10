@@ -6,6 +6,8 @@ import lombok.Data;
 //파싱 데이터 저장 처리 순위 3순위
 @Data
 public class ProfileTooltipParsing {
-    private String Crit;
+    private String fatal;//치명
+    private String Specialization;//특화
+    private String speed;//신속
 
 }
