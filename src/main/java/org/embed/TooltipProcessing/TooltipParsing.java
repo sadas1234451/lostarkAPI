@@ -3,7 +3,7 @@ package org.embed.TooltipProcessing;
 import lombok.Data;
 
 
-//아이템 파싱 명 시작은 무조건 대문자로 시작할것 
+//데이터 명 시작은 무조건 대문자
 @Data
 public class TooltipParsing {
     private String Type;// 아이템 종류(무기,방어구 등)
@@ -20,5 +20,5 @@ public class TooltipParsing {
     private String BraceletOption; // 팔찌 기본 옵션
     private String BraceletPartOption; // 팔찌 특수 옵션
     private String AbilityStone; // 어빌리티 스톤
-    
+
 }
