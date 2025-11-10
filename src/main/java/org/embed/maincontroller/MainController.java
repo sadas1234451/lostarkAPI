@@ -34,9 +34,26 @@ public class MainController {
 
         List<CharacterData> siblingsList = characterService.CData(characterName);
         if (siblingsList != null && !siblingsList.isEmpty()) { 
-        model.addAttribute("siblingsList", siblingsList);
+
+            List<CharacterData> sortedSiblingsList = siblingsList.stream()
+            .sorted((c1, c2) -> {
+                try {
+                    // String으로 저장된 ItemLevel을 Double로 변환
+                    Double level1 = Double.parseDouble(c1.getItemLevel().replace(",", ""));
+                    Double level2 = Double.parseDouble(c2.getItemLevel().replace(",", ""));
+                    // 내림차순 정렬 (높은 레벨이 먼저)
+                    return level2.compareTo(level1);
+                } catch (NumberFormatException e) {
+                    // ItemLevel 파싱 오류 발생 시 순서 변경하지 않음
+                    return 0; 
+                }
+            })
+            .collect(Collectors.toList());
+
+        model.addAttribute("siblingsList", sortedSiblingsList);
         model.addAttribute("mainCharacter", characterName);
         model.addAttribute("searchStatus", "success");
+        log.info("siblingsList: {}", sortedSiblingsList);
 
         }else{
              model.addAttribute("searchStatus", "failure");

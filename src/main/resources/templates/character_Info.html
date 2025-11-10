@@ -63,10 +63,13 @@
         <!-- ================캐릭터 상세정보====================== -->
             <div class="conbox con1">
                 <!-- 전투력 및 닉네임 표시  -->
+<<<<<<< HEAD
                 <!-- 캐릭터 닉네임  --> <!-- 전투력 --> <!-- 치특신  표시 -->
 
 
 
+=======
+>>>>>>> ad31992a8b01e9c18a91b138c482f64a6e15c206
 
 
         
@@ -157,7 +160,7 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            
                    
                 <!-- 장비 목록이 없거나 로딩 중일 때 표시할 메시지 -->
                 <div th:unless="${(weaponAndArmorItems != null and !#lists.isEmpty(weaponAndArmorItems)) or (accessoryAndSpecialItems != null and !#lists.isEmpty(accessoryAndSpecialItems))}"
@@ -165,11 +168,14 @@
                     <span th:if="${searchStatus == 'success'}">장비 상세 정보를 가져오지 못했거나 장비가 없습니다.</span>
                     <span th:unless="${searchStatus == 'success'}">캐릭터 정보를 불러오는 중입니다...</span>
                 </div>
-                
-            </div>
+            </div>    
+            
         <!-- ================보유 캐릭터 목록====================== -->
         <!-- 보유 중인 캐릭터 누르면 그 캐릭터 정보 창으로 넘어가기  -->
         <!-- 갱신 버튼 -->
+        
+     
+
         <div class="conbox con2">
              <div th:if="${searchStatus == 'failure'}" 
                     class="p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-lg" role="alert">
@@ -178,6 +184,9 @@
                 
                 <div th:if="${searchStatus == 'success'}">
                     <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 font-semibold">
+                    
+
+                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
                         
                         <a th:each="item : ${siblingsList}" 
                             th:href="@{/character_Info(characterName=${item.characterName})}"
@@ -199,7 +208,7 @@
                     </div>
                 </div> 
             </div>
-
+        </div>
     </div>
 </body>
 </html>
