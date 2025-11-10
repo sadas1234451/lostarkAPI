@@ -49,7 +49,13 @@ public class MainController {
                 }
             })
             .collect(Collectors.toList());
-
+            //캐릭터 아이템 레벨 표시 개별 처리
+            String mainCharacterItemLevel = siblingsList.stream()
+            .filter(c -> c.getCharacterName().equals(characterName)) 
+            .findFirst() 
+            .map(CharacterData::getItemLevel) 
+            .orElse("정보 없음");
+        model.addAttribute("mainCharacterItemLevel", mainCharacterItemLevel);
         model.addAttribute("siblingsList", sortedSiblingsList);
         model.addAttribute("mainCharacter", characterName);
         model.addAttribute("searchStatus", "success");

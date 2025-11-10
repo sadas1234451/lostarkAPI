@@ -20,5 +20,6 @@ public class TooltipParsing {
     private String BraceletOption; // 팔찌 기본 옵션
     private String BraceletPartOption; // 팔찌 특수 옵션
     private String AbilityStone; // 어빌리티 스톤
+    private String totalTranscendenceCount; //총 초월 갯수
 
 }
