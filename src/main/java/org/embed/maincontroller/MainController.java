@@ -1,10 +1,12 @@
 package org.embed.maincontroller;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.embed.DBService.CharacterData;
+import org.embed.TooltipProcessing.GemTooltipParsing;
 import org.embed.TooltipProcessing.ProfileTooltipParsing;
 import org.embed.TooltipProcessing.TooltipParsing;
 import org.embed.service.CharacterService;
@@ -99,7 +101,18 @@ public class MainController {
             log.info("캐릭터 [{}]의 신속 영구 증가량: {}", characterName, profile.getSpeed());
             log.info("캐릭터 [{}]의 전투력: {}", characterName, profile.getCombatPower());
         }
+        //캐릭터 장착 보석처리
+        List<GemTooltipParsing> CharacterGem = characterService.CharacterGemsList(characterName);
+        if(CharacterGem != null && !CharacterGem.isEmpty()){
+            model.addAttribute("characterGems", CharacterGem);
+            
+            log.info("캐릭터 [{}]의 파싱된 보석 상세 정보 {}개를 모델에 추가했습니다.", characterName, CharacterGem.size());
 
+        }else {
+            // 보석 정보가 없거나 파싱에 실패한 경우
+            model.addAttribute("characterGems", Collections.emptyList()); // 빈 리스트 전달
+            log.warn("캐릭터 [{}]의 보석 정보를 가져오지 못했거나 파싱에 실패했습니다.", characterName);
+        }
     return "character_Info";
     }
 }
