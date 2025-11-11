@@ -16,17 +16,22 @@ public class CharacterProfileTooltip {
      public ProfileTooltipParsing extractSummary(CharacterProfile profileDetail) throws Exception{
         
         ProfileTooltipParsing parsing = new ProfileTooltipParsing();
-
+         
         JsonNode statsArrayNode = objectMapper.readTree(profileDetail.getCharacterStats());
-
+         //기본 스텟
          String fatalValue = extractStatValue(statsArrayNode, "치명");
          String specializationValue = extractStatValue(statsArrayNode, "특화");
          String speedValue = extractStatValue(statsArrayNode, "신속");
+         //전투력
+         
 
+
+         //스텟, 전투력 파싱 후 저장
          parsing.setFatal(fatalValue);
          parsing.setSpecialization(specializationValue);
          parsing.setSpeed(speedValue);
-         
+
+         //로그 표시로 재대로 받는지 확인
         log.info("파싱된 스탯 (Value만): 치명={} | 특화={} | 신속={}", 
                  fatalValue, specializationValue, speedValue);
         

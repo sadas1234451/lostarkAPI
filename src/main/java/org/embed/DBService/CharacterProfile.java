@@ -12,6 +12,8 @@ public class CharacterProfile {
     //data 
     @JsonProperty("TotalSkillPoint")
     private String TotalSkillPoint;
+    @JsonProperty("CombatPower")
+    private String combatPower;
     
     private String characterStats;
 }

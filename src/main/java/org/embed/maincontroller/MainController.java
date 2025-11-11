@@ -29,7 +29,7 @@ public class MainController {
     public String home() {
         return "mainHome";
     }
-    
+    //보유캐릭터 목록
      @GetMapping("/character_Info") 
     public String character_Info(@RequestParam("characterName") String characterName, Model model) {
 
@@ -66,7 +66,7 @@ public class MainController {
              model.addAttribute("searchStatus", "failure");
             model.addAttribute("errorMessage", "해당 캐릭터의 정보를 찾을 수 없거나 서버 응답이 유효하지 않습니다.");
         }
-
+        //캐릭터 착용 장비목록
         List<TooltipParsing> CharacterDetail = characterService.CharacterDetailData(characterName);
 
         if(CharacterDetail != null && !CharacterDetail.isEmpty()){
@@ -86,16 +86,20 @@ public class MainController {
         } else {
             log.warn("캐릭터 [{}]의 장비 상세 정보를 가져오지 못했거나 파싱에 실패했습니다.", characterName);
         }
-        
+        //캐릭터 상세스텟
         ProfileTooltipParsing profile = characterService.profiles(characterName);
         if(profile != null ){
             model.addAttribute("fatal", profile.getFatal());
-             model.addAttribute("Specialization", profile.getSpecialization());
-              model.addAttribute("speed", profile.getSpeed());
+            model.addAttribute("specialization", profile.getSpecialization());
+            model.addAttribute("speed", profile.getSpeed());
+            model.addAttribute("combatPower", profile.getCombatPower());
+
             log.info("캐릭터 [{}]의 치명 영구 증가량: {}", characterName, profile.getFatal());
             log.info("캐릭터 [{}]의 특화 영구 증가량: {}", characterName, profile.getSpecialization());
             log.info("캐릭터 [{}]의 신속 영구 증가량: {}", characterName, profile.getSpeed());
+            log.info("캐릭터 [{}]의 전투력: {}", characterName, profile.getCombatPower());
         }
+
     return "character_Info";
     }
 }
