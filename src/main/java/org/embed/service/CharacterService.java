@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.embed.DBService.CharacterData;
 import org.embed.DBService.CharacterDetail;
+import org.embed.DBService.CharacterEngravings;
 import org.embed.DBService.CharacterGem;
 import org.embed.DBService.CharacterProfile;
 import org.embed.TooltipProcessing.CharacterDetailTooltip;
@@ -160,6 +161,9 @@ public class CharacterService {
             ProfileTooltipParsing parsedItem = profilesProcessor.extractSummary(profiles);
             //전투력 정보 세팅
             parsedItem.setCombatPower(profiles.getCombatPower());
+
+            //직업
+            parsedItem.setClassName(profiles.getCharacterClassName());
             return parsedItem;
         }catch (Exception e){
             System.out.println("APi 프로필 호출 실패" + e.getMessage());
@@ -223,4 +227,44 @@ public class CharacterService {
            return Collections.emptyList();
         }
     }
+     //캐릭터 각인 받아오기
+    public CharacterEngravings CharacterEngravingsData(String characterName) {
+        String apiURL = "/armories/characters/" + characterName + "/engravings";
+        String apiResponseJson;
+
+        try {
+            apiResponseJson = webC.get()
+                    .uri(apiURL)
+                    .header("Authorization", "Bearer " + apikey)
+                    .retrieve()
+                    .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(), clientResponse -> {
+                        log.error("API Error: Status={}, URL={}", clientResponse.statusCode(), apiURL);
+                        return clientResponse.bodyToMono(String.class)
+                                .map(body -> new RuntimeException("API 응답 오류: " + clientResponse.statusCode() + ", Body: " + body));
+                    })
+                    .bodyToMono(String.class)
+                    .block();
+
+            log.info("CharacterEngravingsData API 응답 JSON: {}", apiResponseJson);
+
+            if (apiResponseJson == null || apiResponseJson.startsWith("null") || apiResponseJson.contains("message")) {
+                throw new RuntimeException("API 응답이 없습니다.");
+            }
+
+            // 1. JSON을 DTO로 매핑 (ArkPassiveEffects 포함)
+            CharacterEngravings engravingsData = OBJMapper.readValue(
+                    apiResponseJson,
+                    CharacterEngravings.class
+            );
+
+            // 각인 정보(List<EngravingDetail>)는 CharacterEngravings 객체 안에 이미 파싱되어 있습니다.
+            return engravingsData;
+
+        } catch (Exception e) {
+            log.error("각인 데이터 처리 중 예외 발생: {}", e.getMessage(), e);
+            System.out.println("APi 각인 호출 실패" + e.getMessage());
+            return new CharacterEngravings(); // 실패 시 빈 DTO 반환
+        }
+    }
+
 }

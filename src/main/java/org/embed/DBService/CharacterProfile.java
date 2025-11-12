@@ -10,10 +10,12 @@ import lombok.Data;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class CharacterProfile {
     //data 
-    @JsonProperty("TotalSkillPoint")
+    @JsonProperty("TotalSkillPoint") // 토탈 스킬포인트
     private String TotalSkillPoint;
-    @JsonProperty("CombatPower")
+    @JsonProperty("CombatPower") // 전투력
     private String combatPower;
+    @JsonProperty("CharacterClassName") // 직업
+    private String characterClassName;
     
     private String characterStats;
 }

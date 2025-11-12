@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.embed.DBService.CharacterData;
+import org.embed.DBService.CharacterEngravings;
 import org.embed.TooltipProcessing.GemTooltipParsing;
 import org.embed.TooltipProcessing.ProfileTooltipParsing;
 import org.embed.TooltipProcessing.TooltipParsing;
@@ -95,11 +96,13 @@ public class MainController {
             model.addAttribute("specialization", profile.getSpecialization());
             model.addAttribute("speed", profile.getSpeed());
             model.addAttribute("combatPower", profile.getCombatPower());
+            model.addAttribute("className", profile.getClassName());
 
             log.info("캐릭터 [{}]의 치명 영구 증가량: {}", characterName, profile.getFatal());
             log.info("캐릭터 [{}]의 특화 영구 증가량: {}", characterName, profile.getSpecialization());
             log.info("캐릭터 [{}]의 신속 영구 증가량: {}", characterName, profile.getSpeed());
             log.info("캐릭터 [{}]의 전투력: {}", characterName, profile.getCombatPower());
+            log.info("캐릭터 [{}]의 직업: {}", characterName, profile.getClassName());
         }
         //캐릭터 장착 보석처리
         List<GemTooltipParsing> CharacterGem = characterService.CharacterGemsList(characterName);
@@ -112,6 +115,19 @@ public class MainController {
             // 보석 정보가 없거나 파싱에 실패한 경우
             model.addAttribute("characterGems", Collections.emptyList()); // 빈 리스트 전달
             log.warn("캐릭터 [{}]의 보석 정보를 가져오지 못했거나 파싱에 실패했습니다.", characterName);
+        }
+        
+        //캐릭터 장착 각인
+        CharacterEngravings engravingsData = characterService.CharacterEngravingsData(characterName);
+
+        if (engravingsData != null && engravingsData.getEngravings() != null) {
+            // 각인 정보(List<EngravingDetail>)를 모델에 추가
+            model.addAttribute("engravingsList", engravingsData.getEngravings());
+            log.info("캐릭터 [{}]의 각인 상세 정보 {}개를 모델에 추가했습니다.", characterName, engravingsData.getEngravings().size());
+        } else {
+            // 각인 정보가 없거나 API 호출 실패 시 빈 리스트 전달
+            model.addAttribute("engravingsList", Collections.emptyList()); 
+            log.warn("캐릭터 [{}]의 각인 정보를 가져오지 못했습니다.", characterName);
         }
     return "character_Info";
     }

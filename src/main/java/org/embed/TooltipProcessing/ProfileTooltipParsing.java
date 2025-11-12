@@ -10,5 +10,5 @@ public class ProfileTooltipParsing {
     private String Specialization;//특화
     private String Speed;//신속
     private String CombatPower; // 전투력
-
+    private String ClassName; // 직업
 }

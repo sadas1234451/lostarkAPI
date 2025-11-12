@@ -1,6 +1,9 @@
 package org.embed.TooltipProcessing;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -62,90 +65,70 @@ public class CharacterDetailTooltip {
                     }
                }
                //팔찌 옵션
-               if (itemDetail.getType().equals("팔찌")) {
-                    JsonNode e005braceletOption = rootNode
-                         .path("Element_005")
-                         .path("value");
+               // 팔찌 옵션
+               if (itemDetail != null && itemDetail.getType().equals("팔찌")) {
+               
+               JsonNode e005braceletOption = rootNode
+                    .path("Element_005")
+                    .path("value");
 
-                    if (e005braceletOption.isObject()) {
-
-                         String rawText = e005braceletOption.path("Element_001").asText();
+               if (e005braceletOption.isObject()) {
+                    
+                    String rawText = e005braceletOption.path("Element_001").asText();
+                    
+                    if (rawText.isEmpty() || rawText.isBlank()) {
+                         parsing.setBraceletOption("");
+                         parsing.setBraceletPartOption("");
+                    } else {
                          
-                         // rawText가 비어있을 경우, 필드에 빈 값을 설정하고 다음 로직을 건너뜁니다.
-                         if (rawText.isEmpty() || rawText.isBlank()) {
-                              parsing.setBraceletOption("");
-                              parsing.setBraceletPartOption("");
-                              // 'return parsing;'이 메서드 끝에 있다면, 여기서 return 없이 다음 줄로 넘어가
-                              // parsing.setBraceletOption/PartOption이 재차 호출되도록 둡니다.
-                         }
-
-                         String cleanText = rawText
-                              .replaceAll("<[^>]*>", "") // 모든 HTML/FONT 태그 제거
-                              .replaceAll("\\s{2,}", " ") // 2개 이상의 연속된 공백을 1개로 축소
-                              .trim();
-
-                         // 파싱된 3개 옵션 줄을 담을 변수 선언
-                         String optionLine1 = ""; // 신속/치명 (기존 baseStatsLine)
-                         String optionLine2 = ""; // 첫 번째 부여 옵션 (복합 문장)
-                         String optionLine3 = ""; // 나머지 부여 옵션들 (줄 바꿈 적용됨)
+                         // 1. <BR> 태그를 줄바꿈 문자(\n)로 치환하여 옵션들을 줄 단위로 분리 (핵심)
+                         String lineSeparatedText = rawText.replaceAll("(?i)<\\s*BR\\s*>", "\n").trim();
                          
-                         // remainingText에 cleanText 전체를 넣어 파싱 시작
-                         String remainingText = cleanText;
-
-                         // 1. Line 1: 신속/치명 등 기본 옵션 추출
-                         Pattern line1Pattern = Pattern.compile("^(.+?\\+\\d+)\\s*(.+?\\+\\d+)");
-                         Matcher line1Matcher = line1Pattern.matcher(remainingText);
-
-                         if (line1Matcher.find()) {
-                              // 신속/치명을 Line 1으로 추출
-                              optionLine1 = line1Matcher.group(1).trim() + "  " + line1Matcher.group(2).trim();
+                         // 2. 모든 HTML 태그 제거 (단, \n은 유지됨)
+                         String cleanText = lineSeparatedText.replaceAll("<[^>]*>", "").trim();
+                         
+                         // 3. 줄(\n) 단위로 분리하여 배열 생성
+                         String[] options = cleanText.split("\n");
+                         
+                         List<String> baseStatsList = new ArrayList<>();
+                         List<String> partOptionsList = new ArrayList<>();
+                         
+                         // ⭐️ 4. 허용되는 기본 스탯 이름 목록과 정규식 패턴 정의 ⭐️
+                         // (체력|신속|치명|특화|제압|인내|숙련) +숫자 형태만 기본 스탯으로 인정
+                         String statNames = "(체력|신속|치명|특화|제압|인내|숙련)"; 
+                         Pattern baseStatPattern = Pattern.compile("^(" + statNames + "\\s*\\+\\d+)$");
+                         
+                         // 5. 배열 순회하며 기본 스탯과 부여 옵션 분리
+                         for (String option : options) {
+                              String trimmedOption = option.replaceAll("\\s{2,}", " ").trim();
                               
-                              // Line 1을 제외한 나머지 텍스트 갱신
-                              remainingText = remainingText.substring(line1Matcher.end()).trim();
-                         }
-
-                        // 첫 번째 부여옵션 추출 순서
-                         Pattern line2Pattern = Pattern.compile("^(.+?[\\\\다\\\\.])\\\\s*"); 
-                         Matcher line2Matcher = line2Pattern.matcher(remainingText);
-
-                         if (line2Matcher.find()) {
-                              // Line 2 추출
-                              optionLine2 = line2Matcher.group(1).trim(); 
+                              if (trimmedOption.isEmpty()) continue;
                               
-                              // Line 2를 제외한 나머지 텍스트 갱신
-                              remainingText = remainingText.substring(line2Matcher.end()).trim();
+                              Matcher baseStatMatcher = baseStatPattern.matcher(trimmedOption);
+                              
+                              if (baseStatMatcher.find()) {
+                                   // 기본 스탯인 경우 (예: "신속 +105")
+                                   baseStatsList.add(baseStatMatcher.group(1).trim());
+                              } else {
+                                   // 부여 옵션인 경우
+                                   partOptionsList.add(trimmedOption);
+                              }
                          }
 
+                         // 6. 기본 스탯 포맷팅 (예: "신속 +105  치명 +116")
+                         String baseStatsFormatted = String.join("  ", baseStatsList);
                          
-                        //2,3 번 나머지 옵션 전체 + 줄 바꿈 포맷팅//
-                         optionLine3 = remainingText; 
-                         
-                         optionLine3 = optionLine3.replaceAll("([다\\.])(\\s*)(?=[가-힣])", "$1$2<br>");
+                         // 7. 부여 옵션 포맷팅 (각 옵션 사이에 <br> 삽입)
+                         String partOptionsFormatted = String.join("<br>", partOptionsList);
 
-                         // B. ⭐️ 수정된 정규식: %/숫자 뒤에 공백이 오고, 그 뒤에 '증'으로 이어지지 않을 때만 <br> 추가  
-                    //    (예: '8.4% 공격이...'는 분리, '3% 증가하며...'는 유지)
-                         optionLine3 = optionLine3.replaceAll("(?<=[%\\d])(\\s+)(?![가-힣]*증)(?=[가-힣])", "$1<br>");
-
-                         
-                         // baseStatsLine 역할: Line 1 (신속/치명) 설정
-                         parsing.setBraceletOption(optionLine1); 
-                         
-                         // formattedOptions 역할: Line 2와 Line 3을 <br>로 합쳐서 설정
-                         // Line 2가 비어있으면 Line 3만 사용합니다.
-                         String combinedOptions = "";
-                         if (!optionLine2.isEmpty()) {
-                              combinedOptions = optionLine2 + "<br>" + optionLine3;
-                         } else {
-                              // 신속/치명이 있었으나 Line 2가 없거나, 신속/치명/Line 2 모두 없었을 때
-                              combinedOptions = optionLine3;
-                         }
-                         
-                         // 만약 Line 1도 없었고, Line 2도 없었으며, Line 3도 없다면 (파싱 데이터 자체가 없을 때),
-                         // combinedOptions는 빈 문자열처리 
-                         
-                         parsing.setBraceletPartOption(combinedOptions.trim()); 
+                         // 8. 최종 DTO 저장
+                         // baseStatsFormatted: 신속 +105  치명 +116
+                         // partOptionsFormatted: 적에게 주는 피해가 3% 증가하며, 무력화 상태의 적에게 주는 피해가 5% 증가한다.<br>치명타 적중률 +5.00%...
+                         parsing.setBraceletOption(baseStatsFormatted); 
+                         parsing.setBraceletPartOption(partOptionsFormatted);
                     }
-                    }
+               }
+               }
                //기본효과
                JsonNode e006Value = rootNode.path("Element_006").path("value");
                if (e006Value.isObject() && e006Value.has("Element_001")) {
@@ -171,53 +154,143 @@ public class CharacterDetailTooltip {
                }//추가 효과(상급재련)
 
                // 초월 단계 및 수치
-               JsonNode e009TopStr = rootNode 
-                                             .path("Element_009")
-                                             .path("value")
-                                             .path("Element_000")
-                                             .path("topStr");
-               String transcendenceSummary = " "; 
-               if (e009TopStr.isTextual()) {
-                    
-                    String rawText = e009TopStr.asText();
-                    String cleanText = rawText.replaceAll("<[^>]*>", "").replaceAll("\r\n", " ").trim();
+               String transcendenceSummary = "0"; 
+               JsonNode targetNode = null;
+               log.info("--- 초월 정보 파싱 시작 ---");
 
-                    Pattern pattern = Pattern.compile("\\[초월\\]\\s*(\\d+)\\s*단계\\s*(\\d+)");
-                    Matcher matcher = pattern.matcher(cleanText);
-                    if (matcher.find()) {
-                         String level = matcher.group(1);
-                         String totalvalue = matcher.group(2);
-                         transcendenceSummary = level + "단계 " + totalvalue;
-                         parsing.setIndentStringGroup(transcendenceSummary);
-                         log.info(transcendenceSummary);
+               // JSON 전체를 순회하면서 "topStr" 키를 가진 노드를 찾습니다.
+               Iterator<Map.Entry<String, JsonNode>> fields = rootNode.fields();
+
+               while (fields.hasNext()) {
+               Map.Entry<String, JsonNode> entry = fields.next();
+               JsonNode elementNode = entry.getValue(); 
+               
+               // 1-1. Element_XXX의 value 노드 확인
+               JsonNode valueNode = elementNode.path("value");
+
+               if (valueNode.isObject()) {
+                    
+                    Iterator<String> subFieldNames = valueNode.fieldNames();
+                    while (subFieldNames.hasNext()) {
+                         String subElementKey = subFieldNames.next();
+                         JsonNode subElementNode = valueNode.path(subElementKey);
+
+                         JsonNode topStrNode = subElementNode.path("topStr");
+                         
+                         // 1-2. topStr 노드가 존재하는지 확인
+                         if (!topStrNode.isMissingNode() && !topStrNode.isNull()) {
+                              
+                              String rawText = topStrNode.asText();
+                              
+                              // 1-3. topStr 안에 [초월] 키워드가 있는지 확인
+                              if (rawText.contains("[초월]")) {
+                                   log.info("DEBUG - [초월] 키워드 포함된 topStr 노드 확정");
+                                   targetNode = topStrNode;
+                                   break; 
+                              } else {
+                                   log.info("DEBUG - [초월] 키워드 없음 (엘릭서 또는 다른 정보일 가능성)");
+                              }
+                         }
+                    }
+                    if (targetNode != null) break;
                } 
-               }else {
-                         transcendenceSummary = "0";
                }
+               // ------------------------------------------------------------------
+
+               // 2. targetNode에서 문자열을 가져와 파싱을 시도합니다.
+               if (targetNode != null) {
+               String rawText = targetNode.asText();
+               
+               // HTML 태그와 개행 문자 제거
+               String cleanText = rawText.replaceAll("<[^>]*>", "").replaceAll("\r\n", " ").trim();
+               
+               
+               // 정규식: [초월]을 포함하여 단계와 숫자를 추출
+               Pattern pattern = Pattern.compile("\\[초월\\].*?(\\d+)\\s*단계.*?(\\d+)"); 
+               Matcher matcher = pattern.matcher(cleanText);
+
+               if (matcher.find()) {
+                    String level = matcher.group(1);
+                    String totalValue = matcher.group(2); 
+                    transcendenceSummary = level + "단계 " + totalValue;
+
+                    parsing.setIndentStringGroup(transcendenceSummary);
+                    
+                    log.info("--- 초월 정보 찾음: {} 단계 {} ---", level, totalValue);
+               } else {
+                    log.warn("--- 초월 정규식 매칭 실패 --- cleanText: {}", cleanText);
+               }
+               } else {
+               log.info("--- JSON 내에서 [초월] 키워드를 포함하는 topStr 노드를 찾지 못했습니다. ---");
+               }
+                // 최종 결과 저장
 
                // 무기 초월 단계 및 수치
-               JsonNode e010WeponTopStr = rootNode 
-                                             .path("Element_010")
-                                             .path("value")
-                                             .path("Element_000")
-                                             .path("topStr");// 루트 경로
-               String transcendenceSummaryWepon = " "; // 저장  할 변수
-               if (e010WeponTopStr.isTextual()) {
-                    
-                    String rawText = e010WeponTopStr.asText();
-                    String cleanText = rawText.replaceAll("<[^>]*>", "").replaceAll("\r\n", " ").trim();//html 태그 제거 및 공백 정리
+               if (itemDetail.getType().equals("무기")) {
+               String transcendenceSummaryWepon = "0"; // 저장할 변수 (초기값 '0')
+               // JSON 전체를 순회하며 초월 정보(topStr)를 찾습니다.
+               Iterator<Map.Entry<String, JsonNode>> weaponFields = rootNode.fields();
+               
+               boolean foundTranscendence = false;
 
-                    Pattern pattern = Pattern.compile("\\[초월\\]\\s*(\\d+)\\s*단계\\s*(\\d+)");
-                    Matcher matcher = pattern.matcher(cleanText);
-                    if (matcher.find()) {
-                         String level = matcher.group(1);
-                         String totalvalue = matcher.group(2);
-                         transcendenceSummaryWepon = level + "단계 " + totalvalue;
-                         parsing.setIndentStringGroupWeapon(transcendenceSummaryWepon);
-                         log.info(transcendenceSummaryWepon);
-               } 
-               }else {
-                         transcendenceSummaryWepon = "0";
+               while (weaponFields.hasNext() && !foundTranscendence) {
+                    Map.Entry<String, JsonNode> entry = weaponFields.next();
+                    JsonNode elementNode = entry.getValue(); 
+                    
+                    JsonNode valueNode = elementNode.path("value");
+
+                    if (valueNode.isObject()) {
+                         
+                         // value/Element_XXX 노드를 순회합니다. (초월 정보는 보통 Element_000 하위에 있음)
+                         JsonNode subElementNode = valueNode.path("Element_000"); 
+
+                         // 1. topStr 노드에 접근합니다.
+                         JsonNode topStrNode = subElementNode.path("topStr"); 
+                         
+                         if (topStrNode.isTextual()) {
+                              String rawText = topStrNode.asText();
+                              
+                              // 2. 초월 키워드 ([초월] 및 단계) 포함 여부 체크
+                              if (rawText.contains("[초월]") && rawText.contains("단계")) {
+                                   
+                                   foundTranscendence = true; // 초월 정보를 찾았으므로 순회 중지
+                                   
+                                   // 3. HTML 태그 제거 및 공백 정리
+                                   String cleanText = rawText.replaceAll("<[^>]*>", "").replaceAll("\r\n", " ").trim();
+                                   
+                                   // 4. 정규식을 사용하여 초월 단계 및 수치 추출
+                                   // 패턴: [초월] 다음에 오는 단계(\d+)와 이모티콘 뒤에 오는 총 수치(\d+)를 찾습니다.
+                                   // 예: [초월] 7단계 21
+                                   Pattern pattern = Pattern.compile("\\[초월\\]\\s*(\\d+)\\s*단계.*?(\\d+)");
+                                   Matcher matcher = pattern.matcher(cleanText);
+                                   
+                                   if (matcher.find()) {
+                                   String level = matcher.group(1);
+                                   String totalValue = matcher.group(2);
+                                   
+                                   transcendenceSummaryWepon = level + "단계 " + totalValue;
+                                   
+                                   } else {
+                                   // 패턴이 매칭되지 않은 경우 (예: 초월 단계만 있고 수치가 없는 경우 등)
+                                   Pattern simplePattern = Pattern.compile("\\[초월\\]\\s*(\\d+)\\s*단계");
+                                   Matcher simpleMatcher = simplePattern.matcher(cleanText);
+                                   if(simpleMatcher.find()){
+                                        transcendenceSummaryWepon = simpleMatcher.group(1) + "단계";
+                                   }
+                                   }
+                              } 
+                         }
+                    }
+               }
+               
+               // 5. 최종 DTO 저장
+               parsing.setIndentStringGroupWeapon(transcendenceSummaryWepon);
+               // log.info(transcendenceSummaryWepon); // 로그 제거됨
+               
+               } else {
+               // 무기가 아닐 경우 (방어구/악세 등) 초기값 '0' 또는 빈 값으로 설정
+               // DTO 초기화는 엘릭서 로직에서 이미 처리되지만, 명시적으로 설정
+               parsing.setIndentStringGroupWeapon("0"); 
                }
 
                //상급재련 단계
@@ -245,63 +318,114 @@ public class CharacterDetailTooltip {
                }
 
                //엘릭서 추출
-               JsonNode e010Content = rootNode
-                                             .path("Element_010")
-                                             .path("value")
-                                             .path("Element_000") // Element_000의 contentStr 경로까지 접근
-                                             .path("contentStr");
+               List<String> elixirOptions = new ArrayList<>(); 
+               log.info("--- 엘릭서 정보 파싱 시작 ---");
 
-               if (e010Content.isObject()) {
-               
-               String slot1Option = ""; // 엘릭서 옵션 1
-               JsonNode slot1Node = e010Content.path("Element_000").path("contentStr");
-               
-               if (slot1Node.isTextual()) {
-                    String rawText = slot1Node.asText();
-                    String cleanText = rawText.replaceAll("<[^>]*>", ""); 
-                    String[] lines = cleanText.split("\\n|<br>|<BR>");
-                    String mainOption = lines[0].trim();
-                    String finalOption = mainOption.replaceAll("\\[[가-힣]*\\]\\s*", "");
+               // Null 안전성을 고려한 무기 체크
+               if (!"무기".equals(itemDetail.getType())) { 
+
+
+               // JSON 전체를 순회하면서 옵션 텍스트가 담긴 최종 contentStr 노드를 찾습니다.
+               Iterator<Map.Entry<String, JsonNode>> ElixirOptionfields = rootNode.fields();
+
+               while (ElixirOptionfields.hasNext()) {
+                    Map.Entry<String, JsonNode> entry = ElixirOptionfields.next();
+                    JsonNode elementNode = entry.getValue(); 
                     
-                    if (finalOption.contains("Lv.")) {
-                         Pattern pattern = Pattern.compile("(.+? Lv\\.\\d+)");
-                         Matcher matcher = pattern.matcher(finalOption);
-                         if (matcher.find()) {
-                              finalOption = matcher.group(1).trim();
+                    // 1. Element_XXX의 value 노드 확인
+                    JsonNode valueNode = elementNode.path("value");
+
+                    if (valueNode.isObject()) {
+                         
+                         Iterator<String> subFieldNames = valueNode.fieldNames();
+                         while (subFieldNames.hasNext()) {
+                              String subElementKey = subFieldNames.next();
+                              JsonNode subElementNode = valueNode.path(subElementKey);
+
+                              // 2. contentStr 객체에 접근 (엘릭서 옵션은 이 객체 내부에 있음)
+                              JsonNode contentStrGroup = subElementNode.path("contentStr"); 
+                              
+                              if (contentStrGroup.isObject()) {
+                                   
+                                   // contentStrGroup 하위의 옵션 노드들 (Element_000, Element_001...) 순회
+                                   Iterator<String> optionKeys = contentStrGroup.fieldNames();
+                                   
+                                   while (optionKeys.hasNext()) {
+                                   String optionKey = optionKeys.next();
+                                   // 최종 옵션 텍스트 노드: contentStrGroup/Element_XXX/contentStr
+                                   JsonNode optionTextNode = contentStrGroup.path(optionKey).path("contentStr"); 
+
+                                   if (optionTextNode.isTextual()) {
+                                        String rawText = optionTextNode.asText();
+                                        
+                                        // 3. 엘릭서 옵션 고유 키워드 체크 (Lv.N과 [공용]/[부위] 키워드를 가진 경우만)
+                                        if (rawText.contains("Lv.") && (rawText.contains("[") && rawText.contains("]"))) {
+                                             
+                                             log.info("DEBUG - 엘릭서 옵션 후보 텍스트 발견: {}", rawText);
+                                             
+                                             // 4. HTML 태그 제거 및 전처리
+                                             String cleanText = rawText.replaceAll("<[^>]*>", "").replaceAll("\r\n", " ").trim();
+                                             
+                                             // 5. 첫 줄만 사용 (옵션만)
+                                             String[] lines = cleanText.split("\\n|<br>|<BR>");
+                                             String mainOption = lines[0].trim();
+                                             
+                                             // 6. [부위] 키워드 제거 (예: [공용] 공격력 Lv.5 -> 공격력 Lv.5)
+                                             String finalOption = mainOption.replaceAll("\\[[가-힣]*\\]\\s*", "");
+
+                                             // 7. 'Lv.' 뒤에 붙은 상세 스탯 잔여물 제거
+                                             if (finalOption.contains("Lv.")) {
+                                                  Pattern pattern = Pattern.compile("(.+? Lv\\.\\d+)");
+                                                  Matcher matcher = pattern.matcher(finalOption);
+                                                  if (matcher.find()) {
+                                                       finalOption = matcher.group(1).trim(); 
+                                                  }
+                                             }
+                                             
+                                             // 8. 옵션 리스트에 추가 (순서대로 옵션 1, 2)
+                                             if (!finalOption.isEmpty()) {
+                                                  elixirOptions.add(finalOption);
+                                                  log.info("DEBUG - 최종 추출된 엘릭서 옵션: {}", finalOption);
+                                             }
+                                        }
+                                   }
+                                   }
+                              }
                          }
-                    }
-                    slot1Option = finalOption;
+                    } 
                }
-               parsing.setElixirOption1(slot1Option); 
-               
-               
-               String slot2Option = ""; // 엘릭서 옵션 2
-               JsonNode slot2Node = e010Content.path("Element_001").path("contentStr"); 
-               
-               if (slot2Node.isTextual()) {
-                    String rawText = slot2Node.asText();
-                    String cleanText = rawText.replaceAll("<[^>]*>", ""); 
-                    String[] lines = cleanText.split("\\n|<br>|<BR>");
-                    String mainOption = lines[0].trim();
-                    String finalOption = mainOption.replaceAll("\\[[가-힣]*\\]\\s*", "");
-                    log.info("잔여물 제거 전 : " + finalOption);
-                  
-        
-                    // 'Lv.' 뒤에 붙은 상세 스탯 잔여물 제거
-                    if (finalOption.contains("Lv.")) {
-                         Pattern pattern = Pattern.compile("(.+? Lv\\.\\d+)");
-                         Matcher matcher = pattern.matcher(finalOption);
-                         if (matcher.find()) {
-                              finalOption = matcher.group(0).trim();
-                               log.info("잔여물 제거  :" + finalOption);
-                         }
-                    }
-                    slot2Option = finalOption;
+               } else {
+               // ⭐️ 무기이거나 itemDetail이 null인 경우 ⭐️
+               log.info("--- 엘릭서 정보 파싱 스킵 --- 아이템 타입이 '무기'이거나 타입 정보가 없습니다. 스킵합니다.");
                }
-               parsing.setElixirOption2(slot2Option);
-               
-               log.info("엘릭서 옵션 1: {}, 엘릭서 옵션 2: {}", slot1Option, slot2Option);
+
+               // ------------------------------------------------------------------
+
+               // 9. 최종적으로 DTO에 저장 (if/else 블록이 끝난 후, 모든 경우에 대해 실행)
+               // ------------------------------------------------------------------
+               if (elixirOptions.size() >= 1) {
+               parsing.setElixirOption1(elixirOptions.get(0));
+               } else {
+               // 옵션이 없거나 무기인 경우 Option1도 빈 문자열로 초기화
+               parsing.setElixirOption1("");
                }
+
+               if (elixirOptions.size() >= 2) {
+               parsing.setElixirOption2(elixirOptions.get(1));
+               } else {
+               // 옵션이 1개 이하인 경우 Option2는 빈 문자열로 초기화
+               parsing.setElixirOption2(""); 
+               }
+
+               log.info("--- 엘릭서 추출 완료 --- 옵션 1: {}, 옵션 2: {}", 
+               parsing.getElixirOption1(), // DTO에서 최종 결과 확인
+               parsing.getElixirOption2());
+
+
+// ------------------------------------------------------------------
+
+
+               
                //어빌리티 스톤
                if (itemDetail.getType().equals("어빌리티 스톤")) {
                     JsonNode e007Stone = rootNode
