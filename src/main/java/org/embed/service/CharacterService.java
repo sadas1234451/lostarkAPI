@@ -9,6 +9,7 @@ import org.embed.DBService.CharacterDetail;
 import org.embed.DBService.CharacterEngravings;
 import org.embed.DBService.CharacterGem;
 import org.embed.DBService.CharacterProfile;
+import org.embed.DBService.Notices;
 import org.embed.TooltipProcessing.CharacterDetailTooltip;
 import org.embed.TooltipProcessing.CharacterGemTooltip;
 import org.embed.TooltipProcessing.CharacterProfileTooltip;
@@ -26,6 +27,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Service
+//API처리 1순위 API주소 받아서 값을 데이터 텝으로 넘김
 public class CharacterService {
     @Value("${lostark.api.key}")
     private String apikey;
@@ -266,5 +268,5 @@ public class CharacterService {
             return new CharacterEngravings(); // 실패 시 빈 DTO 반환
         }
     }
-
+    
 }

@@ -2,15 +2,18 @@ package org.embed.maincontroller;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.embed.DBService.CharacterData;
 import org.embed.DBService.CharacterEngravings;
+import org.embed.DBService.Notices;
 import org.embed.TooltipProcessing.GemTooltipParsing;
 import org.embed.TooltipProcessing.ProfileTooltipParsing;
 import org.embed.TooltipProcessing.TooltipParsing;
 import org.embed.service.CharacterService;
+import org.embed.service.NewsService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,13 +26,24 @@ import lombok.extern.slf4j.Slf4j;
 public class MainController {
     
     private final CharacterService characterService;
+    private final NewsService newsService;
 
-    public MainController(CharacterService characterService){
+    public MainController(CharacterService characterService, NewsService newsService){
         this.characterService = characterService;
+        this.newsService = newsService;
     }
 
     @GetMapping("/mainHome")
-    public String home() {
+    public String home(Model model) {
+        List<Notices> noticesList = newsService.noticesData();
+        if(noticesList != null && !noticesList.isEmpty()){
+            List<Notices> sortedNoticesList = noticesList.stream()
+            .sorted(Comparator.comparing(Notices::getDate).reversed())
+            .collect(Collectors.toList());
+            
+            model.addAttribute("notiesList", sortedNoticesList);
+        }
+
         return "mainHome";
     }
     //보유캐릭터 목록

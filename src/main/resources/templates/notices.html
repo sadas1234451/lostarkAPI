@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"></html>
+<head>
+<meta charset="UTF-8">
+<title>공지사항</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+    <div th:fragment="notices" class="text-gray-600 text-sm">
+        
+        <!-- 2. UL 태그에 th:each를 적용하여 반복을 시작합니다. -->
+        <ul class="space-y-1">
+            <li th:each="notice : ${noticesList}" class="py-1 flex justify-between items-center border-b border-gray-100 last:border-b-0">
+                <!-- 3. 반복되는 내용물을 th:text로 출력합니다. -->
+                <a th:href="${notice.Link}" 
+                   th:text="${notice.Title} + ' (' + ${#temporals.format(notice.Date, 'MM.dd HH:mm')} + ')'"
+                   target="_blank" 
+                   class="text-gray-900 text-sm hover:text-blue-600 transition truncate w-full">
+                   일단 이게 나와야함 (날짜)
+                </a>
+            </li>
+        </ul>
+        
+        <!-- 데이터가 없을 때 표시할 내용 추가 (디버깅에도 도움이 됩니다) -->
+        <div th:if="${#lists.isEmpty(noticesList)}" class="py-4 text-center text-gray-400">
+            API에서 공지사항 데이터를 받지 못했습니다.
+        </div>
+    </div>
+</body>
+</html>
