@@ -9,14 +9,17 @@
     <div th:fragment="notices" class="text-gray-600 text-sm">
         
         <!-- 2. UL 태그에 th:each를 적용하여 반복을 시작합니다. -->
+        <!-- 2. UL 태그에 목록 스타일 설정 -->
         <ul class="space-y-1">
-            <li th:each="notice : ${noticesList}" class="py-1 flex justify-between items-center border-b border-gray-100 last:border-b-0">
-                <!-- 3. 반복되는 내용물을 th:text로 출력합니다. -->
-                <a th:href="${notice.Link}" 
-                   th:text="${notice.Title} + ' (' + ${#temporals.format(notice.Date, 'MM.dd HH:mm')} + ')'"
-                   target="_blank" 
-                   class="text-gray-900 text-sm hover:text-blue-600 transition truncate w-full">
-                   일단 이게 나와야함 (날짜)
+            <!-- 3. noticeList를 순회하며 LI 생성 -->
+            <!-- 리스트 항목에만 경계선 스타일을 남겨둡니다. -->
+            <li th:each="notice : ${noticesList}" class="py-1 border-b border-gray-100 last:border-b-0">
+                
+               <a th:href="${notice.Link}"
+                       th:text="${notice.Title}" 
+                       target="_blank" 
+                       class="text-gray-900 font-medium hover:text-blue-600 transition truncate  w-full">
+                        공지사항 제목
                 </a>
             </li>
         </ul>

@@ -39,9 +39,20 @@ public class MainController {
         if(noticesList != null && !noticesList.isEmpty()){
             List<Notices> sortedNoticesList = noticesList.stream()
             .sorted(Comparator.comparing(Notices::getDate).reversed())
+            .limit(5)
             .collect(Collectors.toList());
             
-            model.addAttribute("notiesList", sortedNoticesList);
+            model.addAttribute("noticesList", sortedNoticesList);
+        }
+        List<Notices> updatesList = newsService.updatesData();
+        if(updatesList != null && !updatesList.isEmpty()){
+            List<Notices> sortedUpdatesList = updatesList.stream()
+                .sorted(Comparator.comparing(Notices::getDate).reversed())
+                .limit(5)
+                .collect(Collectors.toList());
+                
+            // "updatesList"라는 이름으로 모델에 추가
+            model.addAttribute("updatesList", sortedUpdatesList); 
         }
 
         return "mainHome";
