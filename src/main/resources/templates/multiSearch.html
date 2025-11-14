@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>로스트아크 캐릭터 정보</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* 로스트아크 공식 웹사이트의 어두운 배경색 및 폰트 색상 */
+        .bg-lostark-dark {
+            background-color: #171819; 
+        }
+        .text-lostark-light {
+            color: #f7f7f7;
+        }
+        /* 목록 배경 */
+        .list-container-bg {
+             background-color: #f7f7f7; /* 흰색 배경으로 대비 */
+        }
+        /* 메인 캐릭터 (민트색) */
+        .main-char-bg {
+            background-color: #b2f5ea; 
+        }
+        /* 서브 캐릭터 (핑크색) */
+        .sub-char-bg {
+            background-color: #ffb5d8;
+        }
+        /* 특성 열의 텍스트 크기 조정 */
+        .trait-text {
+            font-size: 0.8rem; /* Tailwind 'text-sm'보다 약간 작게 */
+        }
+    </style>
+</head>
+<body class="bg-lostark-dark min-h-screen">
+
+    <div th:replace="header :: header"></div>
+
+    <div class="max-w-7xl mx-auto p-4 pt-4">
+
+        <div class="mb-6 p-4 bg-gray-800 rounded-lg shadow-xl">
+            <div class="flex items-center bg-white rounded-lg border border-gray-300">
+                <input 
+                    type="text" 
+                    placeholder="캐릭터 입력" 
+                    class="w-full text-gray-800 placeholder-gray-500 p-3 rounded-l-lg focus:outline-none"
+                    value="캐릭터 이름 더미"> 
+                <button 
+                    class="px-5 py-3 text-gray-600 hover:text-gray-900 transition duration-200 focus:outline-none">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                </button>
+            </div>
+        </div>
+        
+        <div class="list-container-bg rounded-lg shadow-2xl overflow-hidden border border-gray-300">
+            
+            <div class="grid grid-cols-10 gap-2 p-3 bg-gray-200 text-xs font-bold text-gray-600 border-b border-gray-300">
+                <div class="col-span-2">캐릭터 이름</div>
+                <div class="col-span-2">직업</div>
+                <div class="col-span-1">전투력</div>
+                <div class="col-span-3">특성</div>
+                <div class="col-span-2">보석</div>
+            </div>
+
+            <div class="grid grid-cols-10 gap-2 p-4 main-char-bg border-b border-gray-300 hover:shadow-md transition duration-200">
+                
+                <div class="col-span-2 font-bold text-gray-800">눈가루</div>
+                
+                <div class="col-span-2 text-sm text-gray-700">브레이커</div>
+                
+                <div class="col-span-1 text-sm text-gray-700">4,500만</div>
+                
+                <div class="col-span-3 text-sm text-gray-700">
+                    <div class="trait-text font-medium text-red-600">치명</div>
+                    <div class="trait-text">신속</div>
+                    <div class="trait-text">특화</div>
+                </div>
+                
+                <div class="col-span-2 flex items-start pt-1">
+                     <div class="bg-blue-500 w-5 h-5 rounded-sm mr-1"></div>
+                     <div class="bg-red-500 w-5 h-5 rounded-sm mr-1"></div>
+                     <div class="text-xs pt-1 text-gray-600">외 8개</div>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-10 gap-2 p-4 sub-char-bg border-b border-gray-300 hover:shadow-md transition duration-200">
+                
+                <div class="col-span-2 font-bold text-gray-800">필례</div>
+                
+                <div class="col-span-2 text-sm text-gray-700">배틀마스터</div>
+                
+                <div class="col-span-1 text-sm text-gray-700">4,500만</div>
+                
+                <div class="col-span-3 text-sm text-gray-700">
+                    <div class="trait-text font-medium text-red-600">신속</div>
+                    <div class="trait-text">치명</div>
+                    <div class="trait-text">제압</div>
+                </div>
+                
+                <div class="col-span-2 flex items-start pt-1">
+                     <div class="bg-blue-500 w-5 h-5 rounded-sm mr-1"></div>
+                     <div class="bg-red-500 w-5 h-5 rounded-sm mr-1"></div>
+                     <div class="text-xs pt-1 text-gray-600">외 9개</div>
+                </div>
+            </div>
+            
+            <div class="p-3 text-center text-sm text-gray-500">
+                캐릭터 목록 끝
+            </div>
+
+        </div>
+
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>로스트아크 마켓 데이터</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* 로스트아크 웹사이트의 어두운 배경색 느낌을 위해 */
+        .bg-lostark-dark {
+            background-color: #ffffff; 
+        }
+        /* 데이터 카드 (행)의 배경색 */
+        .card-bg {
+            background-color: #ffffff; 
+        }
+        /* 텍스트 색상 */
+        .text-lostark-light {
+            color: #000000;
+        }
+    </style>
+</head>
+<body class="bg-lostark-dark min-h-screen p-8 font-sans">
+    <div th:replace="header :: header"></div>
+
+    <div class="max-w-7xl mx-auto p-6 shadow-2xl rounded-xl card-bg">
+        
+        <h1 class="text-3xl font-bold text-yellow-400 mb-6 border-b border-gray-600 pb-3">
+            <span class="text-black">💰 유물각인서 실시간 시세</span> 
+        </h1>
+
+        <div th:if="${loadStatus == 'failure'}" class="bg-red-900/50 border border-red-700 text-red-300 px-4 py-3 rounded mb-6">
+            <p class="font-bold">🚨 데이터 로드 오류 발생!</p>
+            <p th:text="${errorMessage}">데이터 로드 오류</p>
+        </div>
+
+        <div th:if="${loadStatus == 'success' and !marketDataList.empty}">
+            <p class="text-sm text-gray-400 mb-4" th:text="'업데이트 시간: ' + ${marketDataList[0].searchTime} + ' 기준'"></p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                <div th:each="data : ${marketDataList}" 
+                     class="card-bg p-4 rounded-lg shadow-md border border-gray-700 hover:border-yellow-500 transition duration-200">
+                    
+                    <div class="text-lg font-semibold text-lostark-light mb-1 border-b border-gray-600 pb-1"
+                         th:text="${data.itemName}">
+                        아이템 이름 예시
+                    </div>
+                    
+                    <div class="flex justify-between items-center mt-2">
+                        <span class="text-sm text-gray-400">최저가</span>
+                        <span class="text-xl font-bold text-yellow-300" 
+                              th:text="${#numbers.formatDecimal(data.currentMinPrice, 0, 'COMMA', 0, 'POINT')} + ' G'">
+                            5,400 G
+                        </span>
+                    </div>
+
+                    <div class="mt-2 pt-2 border-t border-gray-700">
+                        <span class="text-xs text-gray-500" 
+                              th:text="'업데이트: ' + ${data.searchTime}">
+                            업데이트: 2025-11-14 16:00:00
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div th:if="${marketDataList.empty and loadStatus != 'failure'}" class="bg-yellow-900/50 border border-yellow-700 text-yellow-300 px-4 py-3 rounded">
+            <p class="font-bold">스프레드시트에 데이터가 없습니다.</p>
+        </div>
+    </div>
+</body>
+</html>

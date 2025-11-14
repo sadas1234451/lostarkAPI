@@ -156,6 +156,11 @@ public class MainController {
         }
     return "character_Info";
     }
+    @GetMapping("/multiSearch")
+    public String multiSearch(Model model) {
+        
+        return "multiSearch";
+    }
 }
 
 
