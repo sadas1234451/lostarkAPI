@@ -2,7 +2,8 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>로스트아크 캐릭터 정보</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>로스트아크 멀티 캐릭터 검색</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* 로스트아크 공식 웹사이트의 어두운 배경색 및 폰트 색상 */
@@ -14,15 +15,7 @@
         }
         /* 목록 배경 */
         .list-container-bg {
-             background-color: #f7f7f7; /* 흰색 배경으로 대비 */
-        }
-        /* 메인 캐릭터 (민트색) */
-        .main-char-bg {
-            background-color: #b2f5ea; 
-        }
-        /* 서브 캐릭터 (핑크색) */
-        .sub-char-bg {
-            background-color: #ffb5d8;
+            background-color: #f7f7f7; /* 흰색 배경으로 대비 */
         }
         /* 특성 열의 텍스트 크기 조정 */
         .trait-text {
@@ -32,83 +25,155 @@
 </head>
 <body class="bg-lostark-dark min-h-screen">
 
-    <div th:replace="header :: header"></div>
+    <!-- Header는 이 템플릿에 포함되어 있지 않으므로 주석 처리하거나 별도 파일로 처리해야 합니다. -->
+    <!-- <div th:replace="header :: header"></div> -->
 
     <div class="max-w-7xl mx-auto p-4 pt-4">
-
+        
+        <!-- 검색 폼 -->
         <div class="mb-6 p-4 bg-gray-800 rounded-lg shadow-xl">
             <div class="flex items-center bg-white rounded-lg border border-gray-300">
                 <input 
                     type="text" 
-                    placeholder="캐릭터 입력" 
+                    id="charNamesInput"
+                    placeholder="캐릭터A,캐릭터B,캐릭터C (쉼표로 구분)" 
                     class="w-full text-gray-800 placeholder-gray-500 p-3 rounded-l-lg focus:outline-none"
-                    value="캐릭터 이름 더미"> 
+                    value=""> 
                 <button 
-                    class="px-5 py-3 text-gray-600 hover:text-gray-900 transition duration-200 focus:outline-none">
+                    onclick="searchCharacters()"
+                    class="px-5 py-3 text-gray-600 hover:text-gray-900 transition duration-200 focus:outline-none rounded-r-lg">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                 </button>
             </div>
         </div>
         
+        <!-- 검색 결과 테이블 헤더 및 컨테이너 -->
         <div class="list-container-bg rounded-lg shadow-2xl overflow-hidden border border-gray-300">
             
+            <!-- 테이블 헤더 (10 Column Layout) -->
             <div class="grid grid-cols-10 gap-2 p-3 bg-gray-200 text-xs font-bold text-gray-600 border-b border-gray-300">
                 <div class="col-span-2">캐릭터 이름</div>
                 <div class="col-span-2">직업</div>
-                <div class="col-span-1">전투력</div>
-                <div class="col-span-3">특성</div>
-                <div class="col-span-2">보석</div>
+                <div class="col-span-2">레벨 / 전투력</div> <!-- 아이템 레벨 및 전투력 결합 -->
+                <div class="col-span-3">주요 특성</div> 
+                <div class="col-span-1 text-center">보석 수</div> <!-- 보석 개수만 표시 -->
             </div>
 
-            <div class="grid grid-cols-10 gap-2 p-4 main-char-bg border-b border-gray-300 hover:shadow-md transition duration-200">
-                
-                <div class="col-span-2 font-bold text-gray-800">필례</div>
-                
-                <div class="col-span-2 text-sm text-gray-700">브레이커</div>
-                
-                <div class="col-span-1 text-sm text-gray-700">4,500만</div>
-                
-                <div class="col-span-3 text-sm text-gray-700">
-                    <div class="trait-text font-medium text-red-600">치명</div>
-                    <div class="trait-text">신속</div>
-                    <div class="trait-text">특화</div>
+            <!-- 결과가 동적으로 들어갈 바디 컨테이너 -->
+            <div id="results-container">
+                <div class="p-3 text-center text-sm text-gray-500" id="initial-message">
+                    검색할 캐릭터 이름을 입력하고 검색 버튼을 눌러주세요.
                 </div>
-                
-                <div class="col-span-2 flex items-start pt-1">
-                     <div class="bg-blue-500 w-5 h-5 rounded-sm mr-1"></div>
-                     <div class="bg-red-500 w-5 h-5 rounded-sm mr-1"></div>
-                     <div class="text-xs pt-1 text-gray-600">외 8개</div>
-                </div>
-            </div>
-            
-            <div class="grid grid-cols-10 gap-2 p-4 sub-char-bg border-b border-gray-300 hover:shadow-md transition duration-200">
-                
-                <div class="col-span-2 font-bold text-gray-800">필례</div>
-                
-                <div class="col-span-2 text-sm text-gray-700">배틀마스터</div>
-                
-                <div class="col-span-1 text-sm text-gray-700">4,500만</div>
-                
-                <div class="col-span-3 text-sm text-gray-700">
-                    <div class="trait-text font-medium text-red-600">신속</div>
-                    <div class="trait-text">치명</div>
-                    <div class="trait-text">제압</div>
-                </div>
-                
-                <div class="col-span-2 flex items-start pt-1">
-                     <div class="bg-blue-500 w-5 h-5 rounded-sm mr-1"></div>
-                     <div class="bg-red-500 w-5 h-5 rounded-sm mr-1"></div>
-                     <div class="text-xs pt-1 text-gray-600">외 9개</div>
-                </div>
-            </div>
-            
-            <div class="p-3 text-center text-sm text-gray-500">
-                캐릭터 목록 끝
             </div>
 
         </div>
 
     </div>
 
+    <script>
+        // MultiSearchService에서 정의된 DTO 필드에 기반하여 HTML을 생성하는 로직
+        
+        // 검색 버튼 클릭 시 호출되는 함수
+        function searchCharacters() {
+            const charNamesInput = document.getElementById('charNamesInput').value;
+            const resultsContainer = document.getElementById('results-container');
+            
+            resultsContainer.innerHTML = `
+                <div class="p-3 text-center text-sm text-gray-500 animate-pulse">
+                    데이터를 불러오는 중입니다...
+                </div>
+            `;
+
+            if (!charNamesInput.trim()) {
+                resultsContainer.innerHTML = `<div class="p-3 text-center text-sm text-red-500">검색할 캐릭터 이름을 입력해주세요.</div>`;
+                return;
+            }
+
+            // 쉼표로 분리하여 URL 인코딩
+            const url = `/api/multi-search?charNames=${encodeURIComponent(charNamesInput)}`;
+
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`API 호출 실패 (상태: ${response.status})`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    displayResults(data);
+                })
+                .catch(error => {
+                    console.error('멀티 서치 오류:', error);
+                    resultsContainer.innerHTML = `<div class="p-3 text-center text-sm text-red-500">데이터 로드 실패: ${error.message}</div>`;
+                });
+        }
+
+        // 검색 결과를 화면에 표시하는 함수
+        function displayResults(results) {
+            const resultsContainer = document.getElementById('results-container');
+            resultsContainer.innerHTML = ''; // 초기화
+
+            if (results.length === 0) {
+                resultsContainer.innerHTML = `<div class="p-3 text-center text-sm text-gray-500">검색 결과가 없거나, 모든 캐릭터 정보를 로드할 수 없었습니다.</div>`;
+                return;
+            }
+
+            results.forEach((char, index) => {
+                // 첫 번째 캐릭터는 메인(mint) 스타일, 나머지는 서브(pink) 스타일을 적용합니다.
+                const bgColorClass = index === 0 ? 'bg-emerald-100' : 'bg-pink-100';
+
+                // 특성 목록을 파싱하여 [이름, 값] 형태로 변환 (값이 높은 순으로 정렬)
+                const traits = [
+                    { name: '치명', value: char.statCrit },
+                    { name: '신속', value: char.statSwiftness },
+                    { name: '특화', value: char.statSpecialization }
+                ]
+                .sort((a, b) => {
+                    // 특성 값을 숫자로 비교하기 위해 쉼표 제거 후 파싱
+                    const valA = parseInt(a.value.replace(/,/g, ''), 10) || 0;
+                    const valB = parseInt(b.value.replace(/,/g, ''), 10) || 0;
+                    return valB - valA; // 내림차순 정렬 (높은 값 우선)
+                })
+                .map((trait, i) => {
+                    // 가장 높은 값에만 빨간색(혹은 강조색)을 적용합니다.
+                    const colorClass = i === 0 ? 'font-bold text-red-600' : 'text-gray-700';
+                    return `<div class="trait-text ${colorClass}">${trait.name} (${trait.value})</div>`;
+                }).join('');
+
+
+                const rowHtml = `
+                    <div class="grid grid-cols-10 gap-2 p-4 ${bgColorClass} border-b border-gray-300 hover:shadow-md transition duration-200">
+                        
+                        <!-- 닉네임 (col-span-2) -->
+                        <div class="col-span-2 font-bold text-gray-800 text-sm md:text-base">${char.characterName}</div>
+                        
+                        <!-- 직업 (col-span-2) -->
+                        <div class="col-span-2 text-sm text-gray-700">${char.className}</div>
+                        
+                        <!-- 레벨 / 전투력 (col-span-2) -->
+                        <div class="col-span-2 text-xs md:text-sm text-gray-700">
+                            <div class="font-bold text-blue-700">${char.itemLevel}</div>
+                            <div class="text-xs text-gray-600">${char.combatPower}</div>
+                        </div>
+                        
+                        <!-- 주요 특성 (col-span-3) -->
+                        <div class="col-span-3 text-xs text-gray-700">
+                            ${traits}
+                        </div>
+                        
+                        <!-- 보석 수 (col-span-1) -->
+                        <div class="col-span-1 flex justify-center items-center font-bold text-lg text-gray-800">
+                            ${char.totalGemCount}
+                        </div>
+                    </div>
+                `;
+                
+                resultsContainer.innerHTML += rowHtml;
+            });
+
+            // 목록 끝 메시지 추가
+            resultsContainer.innerHTML += `<div class="p-3 text-center text-sm text-gray-500">캐릭터 목록 끝 (${results.length}명)</div>`;
+        }
+    </script>
 </body>
 </html>
