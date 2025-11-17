@@ -24,10 +24,7 @@
     </style>
 </head>
 <body class="bg-lostark-dark min-h-screen">
-
-    <!-- Header는 이 템플릿에 포함되어 있지 않으므로 주석 처리하거나 별도 파일로 처리해야 합니다. -->
-    <!-- <div th:replace="header :: header"></div> -->
-
+    <div th:replace="header :: header"></div>
     <div class="max-w-7xl mx-auto p-4 pt-4">
         
         <!-- 검색 폼 -->
@@ -36,7 +33,7 @@
                 <input 
                     type="text" 
                     id="charNamesInput"
-                    placeholder="캐릭터A,캐릭터B,캐릭터C (쉼표로 구분)" 
+                    placeholder="캐릭터A,캐릭터B,캐릭터C (쉼표로 구분해주세요.)" 
                     class="w-full text-gray-800 placeholder-gray-500 p-3 rounded-l-lg focus:outline-none"
                     value=""> 
                 <button 
@@ -119,8 +116,7 @@
             }
 
             results.forEach((char, index) => {
-                // 첫 번째 캐릭터는 메인(mint) 스타일, 나머지는 서브(pink) 스타일을 적용합니다.
-                const bgColorClass = index === 0 ? 'bg-emerald-100' : 'bg-pink-100';
+                const bgColorClass = index === 0 ? 'bg-emerald-100' : 'bg-emerald-100';
 
                 // 특성 목록을 파싱하여 [이름, 값] 형태로 변환 (값이 높은 순으로 정렬)
                 const traits = [
@@ -129,7 +125,7 @@
                     { name: '특화', value: char.statSpecialization }
                 ]
                 .sort((a, b) => {
-                    // 특성 값을 숫자로 비교하기 위해 쉼표 제거 후 파싱
+                    // 특성 값을 숫자로 비교하기 위해 쉼표 제거
                     const valA = parseInt(a.value.replace(/,/g, ''), 10) || 0;
                     const valB = parseInt(b.value.replace(/,/g, ''), 10) || 0;
                     return valB - valA; // 내림차순 정렬 (높은 값 우선)
