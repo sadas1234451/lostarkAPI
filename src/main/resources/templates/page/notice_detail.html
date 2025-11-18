@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>공지사항 상세</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen p-8">
+    
+    <!-- 로딩 및 에러 메시지 영역 -->
+    <div id="loading" class="max-w-4xl mx-auto p-6 text-center text-lg text-gray-600">
+        공지사항을 불러오는 중...
+    </div>
+
+    <!-- 상세 내용 영역 (데이터 로드 후 표시) -->
+    <div id="notice-content" class="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-xl hidden">
+        <h1 id="notice-title" class="text-3xl font-extrabold text-gray-800 mb-4 border-b pb-2">
+            <!-- 제목 -->
+        </h1>
+
+        <div class="flex justify-between items-center text-sm text-gray-500 mb-6">
+            <span id="notice-author"></span>
+            <span id="notice-date"></span>
+        </div>
+
+        <!-- 공지 내용 영역 -->
+        <div id="notice-body" class="prose max-w-none text-gray-700 leading-relaxed min-h-32 p-4 border rounded-lg bg-gray-50">
+            <!-- 내용 -->
+        </div>
+
+        <div class="mt-8 flex justify-between">
+            <!-- 목록으로 돌아가기 버튼 -->
+            <button onclick="window.location.href='/page/notice'" 
+                    class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded transition duration-150 ease-in-out">
+                목록으로 돌아가기
+            </button>
+            <div id="admin-actions" class="space-x-4">
+                <!-- 관리자 버튼 (수정, 삭제) 영역 - 추후 구현 예정 -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', fetchNoticeDetail);
+
+        function fetchNoticeDetail() {
+            // 1. URL에서 ID 추출 (예: /page/notice/detail/123 -> ID는 123)
+            const pathSegments = window.location.pathname.split('/');
+            const noticeId = pathSegments[pathSegments.length - 1];
+
+            if (!noticeId || isNaN(noticeId)) {
+                showError('잘못된 공지사항 경로입니다.');
+                return;
+            }
+
+            const loadingElement = document.getElementById('loading');
+            const contentElement = document.getElementById('notice-content');
+
+            // 2. REST API 호출: GET /page/notice/{id}
+            fetch(`/page/notice/${noticeId}`)
+                .then(response => {
+                    if (response.status === 404) {
+                        throw new Error('공지사항을 찾을 수 없습니다.');
+                    }
+                    if (!response.ok) {
+                        throw new Error('API 호출 중 오류 발생: ' + response.statusText);
+                    }
+                    return response.json();
+                })
+                .then(notice => {
+                    // 3. 데이터 렌더링
+                    document.getElementById('notice-title').textContent = notice.title;
+                    document.getElementById('notice-author').textContent = `작성자: ${notice.author}`;
+                    
+                    const date = new Date(notice.createdDate);
+                    document.getElementById('notice-date').textContent = `작성일: ${date.toLocaleDateString('ko-KR', {
+                        year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit'
+                    })}`;
+                    
+                    // 내용 표시: 줄바꿈 문자를 <br> 태그로 변환
+                    document.getElementById('notice-body').innerHTML = notice.content.replace(/\n/g, '<br>');
+
+                    // 로딩 숨기고 내용 표시
+                    loadingElement.classList.add('hidden');
+                    contentElement.classList.remove('hidden');
+                })
+                .catch(error => {
+                    showError(error.message || '공지사항 상세 정보를 불러오는 데 실패했습니다.');
+                });
+        }
+        
+        function showError(message) {
+            const loadingElement = document.getElementById('loading');
+            loadingElement.textContent = message;
+            loadingElement.style.color = 'red';
+            document.getElementById('notice-content').classList.add('hidden');
+            loadingElement.classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>공지사항 목록</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Tailwind CSS가 기본 스타일링을 처리하지만, 링크 색상과 커서만 추가합니다. */
+        .title-link { cursor: pointer; }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen p-8">
+    
+    <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-xl">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6 border-b pb-2">
+            공지사항
+        </h1>
+
+        <table id="notice-table" class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/12">ID</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-6/12">제목</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-2/12">작성자</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-3/12">작성일</th>
+                </tr>
+            </thead>
+            <tbody id="notice-list" class="bg-white divide-y divide-gray-200">
+                <tr>
+                    <td colspan="4" class="px-6 py-4 text-sm text-gray-500 text-center">
+                        목록을 불러오는 중...
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="admin-section mt-6 flex justify-end">
+            <button 
+                onclick="location.href='/page/notice/write'"
+                class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded transition duration-150 ease-in-out"
+            >
+                새 공지 작성
+            </button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', fetchNotices);
+
+        function fetchNotices() {
+            fetch('/page/notice')
+                .then(response => {
+                    if (response.status === 204) {
+                        return [];
+                    }
+                    if (!response.ok) {
+                        throw new Error('API 호출 중 오류 발생: ' + response.statusText);
+                    }
+                    return response.json();
+                })
+                .then(notices => {
+                    const noticeList = document.getElementById('notice-list');
+                    noticeList.innerHTML = '';
+
+                    if (notices.length === 0) {
+                        const row = noticeList.insertRow();
+                        const cell = row.insertCell(0);
+                        cell.colSpan = 4;
+                        cell.textContent = "등록된 공지사항이 없습니다.";
+                        cell.className = "px-6 py-4 text-sm text-gray-500 text-center";
+                        return;
+                    }
+
+                    notices.forEach(notice => {
+                        const row = noticeList.insertRow();
+                        
+                        // ID
+                        row.insertCell(0).textContent = notice.id; 
+                        row.cells[0].className = "px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900";
+                        
+                        // 제목 (상세 조회 페이지로 이동)
+                        const titleCell = row.insertCell(1);
+                        const titleLink = document.createElement('a');
+                        titleLink.href = `/page/notice/detail/${notice.id}`; // 상세 조회 경로
+                        titleLink.textContent = notice.title;
+                        titleLink.className = "title-link text-indigo-600 hover:text-indigo-900";
+                        titleCell.appendChild(titleLink);
+                        titleCell.className = "px-6 py-4 whitespace-nowrap text-sm text-gray-700";
+                        
+                        // 작성자
+                        row.insertCell(2).textContent = notice.author;
+                        row.cells[2].className = "px-6 py-4 whitespace-nowrap text-sm text-gray-500";
+
+                        // 작성일 포맷
+                        const date = new Date(notice.createdDate);
+                        row.insertCell(3).textContent = date.toLocaleDateString('ko-KR', {
+                            year: 'numeric', month: '2-digit', day: '2-digit'
+                        });
+                        row.cells[3].className = "px-6 py-4 whitespace-nowrap text-sm text-gray-500";
+                    });
+                })
+                .catch(error => {
+                    console.error('공지사항 로드 실패:', error);
+                    const noticeList = document.getElementById('notice-list');
+                    noticeList.innerHTML = '<tr><td colspan="4" class="px-6 py-4 text-sm text-red-600 text-center">데이터를 불러오는 중 오류가 발생했습니다. 서버 상태를 확인해 주세요.</td></tr>';
+                });
+        }
+    </script>
+</body>
+</html>
