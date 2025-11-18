@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/page/notice")
+@RequestMapping("/api/page/notice")
 public class PageNoticeController {
 
     private final PageNoticeService pageNoticeService;

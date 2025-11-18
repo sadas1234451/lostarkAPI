@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>공지 수정</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen p-8">
+    
+    <div id="loading" class="max-w-3xl mx-auto p-6 text-center text-lg text-gray-600">
+        공지사항 데이터를 불러오는 중...
+    </div>
+
+    <div id="edit-content" class="max-w-3xl mx-auto bg-white p-8 rounded-lg shadow-xl hidden">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6 border-b pb-2">
+            공지 수정
+        </h1>
+
+        <form id="notice-form" class="space-y-6">
+            <div>
+                <label for="title" class="block text-sm font-medium text-gray-700 mb-1">제목</label>
+                <input type="text" id="title" name="title" required 
+                       class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                       placeholder="공지사항 제목을 입력하세요">
+            </div>
+
+            <div>
+                <label for="content" class="block text-sm font-medium text-gray-700 mb-1">내용</label>
+                <textarea id="content" name="content" rows="10" required 
+                          class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                          placeholder="공지사항 내용을 입력하세요."></textarea>
+            </div>
+            
+            <input type="hidden" id="notice-id"> <div id="message-box" class="text-center p-3 rounded-md hidden"></div>
+
+            <div class="flex justify-end space-x-4 mt-6">
+                <button type="button" onclick="history.back()"
+                        class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded transition duration-150 ease-in-out">
+                    취소
+                </button>
+                <button type="submit" id="submit-button"
+                        class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded transition duration-150 ease-in-out">
+                    수정 완료
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', initEditForm);
+
+        function getNoticeIdFromUrl() {
+            const pathSegments = window.location.pathname.split('/');
+            // URL 패턴이 /page/notice/edit/{id} 이므로, 마지막 요소가 ID입니다.
+            const noticeId = pathSegments[pathSegments.length - 1];
+            return noticeId;
+        }
+
+        function initEditForm() {
+            const noticeId = getNoticeIdFromUrl();
+            if (!noticeId || isNaN(noticeId)) {
+                showMessage('잘못된 공지사항 경로입니다.', 'bg-red-100 text-red-700');
+                document.getElementById('loading').classList.add('hidden');
+                return;
+            }
+
+            document.getElementById('notice-id').value = noticeId;
+            
+            // 1. 기존 데이터 로드 (GET API)
+            fetch(`/api/page/notice/${noticeId}`)
+                .then(response => {
+                    if (response.status === 404) {
+                        throw new Error('수정할 공지사항을 찾을 수 없습니다.');
+                    }
+                    if (!response.ok) {
+                        throw new Error('데이터 로드 중 오류 발생: ' + response.statusText);
+                    }
+                    return response.json();
+                })
+                .then(notice => {
+                    // 폼에 기존 데이터 채우기
+                    document.getElementById('title').value = notice.title;
+                    document.getElementById('content').value = notice.content;
+                    
+                    // 로딩 숨기고 폼 표시
+                    document.getElementById('loading').classList.add('hidden');
+                    document.getElementById('edit-content').classList.remove('hidden');
+
+                    // 폼 제출 이벤트 리스너 설정
+                    document.getElementById('notice-form').addEventListener('submit', handleNoticeSubmit);
+                })
+                .catch(error => {
+                    document.getElementById('loading').textContent = `오류: ${error.message}`;
+                    document.getElementById('loading').style.color = 'red';
+                });
+        }
+
+        // 2. 폼 제출 시 수정 API 호출 (PUT API)
+        function handleNoticeSubmit(event) {
+            event.preventDefault();
+            
+            const form = event.target;
+            const noticeId = document.getElementById('notice-id').value;
+            const title = form.title.value.trim();
+            const content = form.content.value.trim();
+            const submitButton = document.getElementById('submit-button');
+
+            if (!title || !content) {
+                showMessage('제목과 내용을 모두 입력해 주세요.', 'bg-yellow-100 text-yellow-700');
+                return;
+            }
+
+            submitButton.disabled = true;
+            submitButton.textContent = '수정 중...';
+            showMessage('공지사항을 서버에 수정 중입니다.', 'bg-blue-100 text-blue-700');
+
+            const data = { title, content, id: noticeId }; // ID를 포함하여 전송
+
+            // REST API 호출: PUT /api/page/notice/{id}
+            fetch(`/api/page/notice/${noticeId}`, {
+                method: 'PUT', // ⚠️ PUT 메서드 사용
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => {
+                submitButton.disabled = false;
+                submitButton.textContent = '수정 완료';
+
+                if (response.ok) {
+                    return response.json();
+                } else if (response.status === 403) {
+                    throw new Error('권한 없음: 공지사항 수정은 관리자(ADMIN)만 가능합니다.');
+                } else if (response.status === 404) {
+                    throw new Error('수정할 공지사항을 찾을 수 없습니다.');
+                } else {
+                    throw new Error(`수정 실패: ${response.status} ${response.statusText}`);
+                }
+            })
+            .then(updatedNotice => {
+                showMessage('✅ 공지사항이 성공적으로 수정되었습니다!', 'bg-green-100 text-green-700');
+                // 1초 후 상세 페이지로 이동
+                setTimeout(() => {
+                    window.location.href = `/page/notice/detail/${updatedNotice.id}`;
+                }, 1000);
+            })
+            .catch(error => {
+                console.error('API Error:', error);
+                submitButton.disabled = false;
+                submitButton.textContent = '수정 완료';
+                showMessage(`❌ 오류 발생: ${error.message}`, 'bg-red-100 text-red-700');
+            });
+        }
+
+        function showMessage(text, className) {
+            const messageBox = document.getElementById('message-box');
+            messageBox.textContent = text;
+            messageBox.className = `text-center p-3 rounded-md ${className}`;
+            messageBox.classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>

@@ -9,8 +9,8 @@ import org.springframework.web.filter.HiddenHttpMethodFilter;
 import org.springframework.web.multipart.MultipartResolver;
 import org.springframework.web.multipart.support.StandardServletMultipartResolver;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-import org.springframework.web.servlet.view.InternalResourceViewResolver;
 
 import jakarta.servlet.MultipartConfigElement;
 
@@ -22,6 +22,13 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
 		// TODO Auto-generated method stub
 		registry.addInterceptor(new LoggerInterceptor());
 	}
+	//공지 작성탭 
+    @Override
+    public void addViewControllers(ViewControllerRegistry registry) {
+		registry.addViewController("/page/notice/write").setViewName("page/notice_write");
+    }
+	
+	
 	
 	@Bean
 	public MultipartResolver multipartResolver() {
@@ -47,13 +54,13 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
 		
 		return hiddenHttpMethodFilter;
 	}
-	@Bean
-    public InternalResourceViewResolver viewResolver() {
-        InternalResourceViewResolver resolver = new InternalResourceViewResolver();
-        resolver.setPrefix("/WEB-INF/views/");
-        resolver.setSuffix(".jsp");
-        return resolver;
-    }
+	// @Bean
+    // public InternalResourceViewResolver viewResolver() {
+    //     InternalResourceViewResolver resolver = new InternalResourceViewResolver();
+    //     resolver.setPrefix("/WEB-INF/views/");
+    //     resolver.setSuffix(".jsp");
+    //     return resolver;
+    // }
 
 }
 

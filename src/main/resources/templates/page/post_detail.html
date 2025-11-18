@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title id="postTitle">게시글 상세</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* 버튼 공통 스타일 (Tailwind의 btn 클래스를 대체) */
+        .btn-base {
+            @apply px-4 py-2 text-sm font-medium rounded-md transition duration-150 ease-in-out;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen p-8">
+
+    <div class="max-w-6xl mx-auto bg-white p-8 rounded-lg shadow-xl"> 
+
+        <h1 id="postDetailTitle" class="text-3xl font-bold text-gray-800 mb-4">...</h1>
+        
+        <div class="post-meta border-b pb-3 mb-6 text-gray-600 text-sm flex justify-between items-center">
+            <p>
+                <span class="font-semibold">작성자:</span> <span id="postAuthor" class="mr-4">...</span> | 
+                <span class="font-semibold">작성일:</span> <span id="postDate" class="mr-4">...</span> 
+            </p>
+            <p>
+                <span class="font-semibold">조회수:</span> <span id="postViewCount">...</span>
+            </p>
+        </div>
+        
+        <div id="postContent" class="post-content min-h-[200px] text-gray-800 leading-relaxed mb-8">
+            </div>
+
+        <hr class="mb-6">
+
+        <div class="post-actions flex justify-end space-x-3 mb-10">
+            <button id="editBtn" class="btn-base bg-yellow-500 hover:bg-yellow-600 text-white  rounded-lg">수정</button>
+            <button id="deleteBtn" class="btn-base bg-red-600 hover:bg-red-700 text-white  rounded-lg">삭제</button>
+            <a href="/community/posts" class="btn-base bg-gray-400 hover:bg-gray-500 text-white  rounded-lg">목록</a>
+        </div>
+        
+        <h2 class="text-2xl font-bold text-gray-800 mb-4 border-b pb-2">댓글</h2>
+
+        <div class="comment-write mb-8 p-4 border rounded-lg bg-gray-50">
+            <h4 class="text-lg font-semibold mb-3">댓글 작성</h4>
+            <form id="commentForm" class="space-y-3">
+                
+                <div class="flex space-x-3">
+                    <input type="text" id="commentNickname" placeholder="닉네임" required class="w-1/3 rounded-md border-gray-300 shadow-sm p-2 border text-sm" />
+                    <input type="password" id="commentPassword" placeholder="비밀번호 (4자리 숫자)" maxlength="4" pattern="[0-9]{4}" required class="w-1/3 rounded-md border-gray-300 shadow-sm p-2 border text-sm" />
+                </div>
+                
+                <textarea id="commentContent" placeholder="댓글 내용을 입력하세요" required class="w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring-pink-500 p-2 border text-sm" rows="3"></textarea>
+                
+                <div class="flex justify-end">
+                    <button type="submit" class="px-4 py-2 text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 transition duration-150">등록</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="comment-list">
+            <ul id="commentsContainer" class="divide-y divide-gray-200">
+                </ul>
+        </div>
+    </div>
+    
+    <script>
+        // 기존 JavaScript 로직 (loadPostDetail, handleDelete, loadComments, handleCommentDelete, 댓글 작성 이벤트)
+        const postId = window.location.pathname.split('/').pop();
+        
+        // --- 1. 게시글 상세 정보 로드 ---
+        function loadPostDetail() {
+            fetch(`/api/community/posts/${postId}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('게시글을 찾을 수 없습니다.');
+                    }
+                    return response.json();
+                })
+                .then(post => {
+                    document.getElementById('postTitle').textContent = post.title;
+                    document.getElementById('postDetailTitle').textContent = post.title;
+                    document.getElementById('postAuthor').textContent = post.authorNickname;
+                    document.getElementById('postDate').textContent = new Date(post.createdDate).toLocaleString();
+                    document.getElementById('postViewCount').textContent = post.viewCount;
+                    document.getElementById('postContent').innerHTML = post.content.replace(/\n/g, '<br>');
+
+                    document.getElementById('editBtn').onclick = () => {
+                        window.location.href = `/community/posts/edit/${postId}`;
+                    };
+                    
+                    document.getElementById('deleteBtn').onclick = handleDelete;
+                    loadComments(postId);
+                })
+                .catch(error => {
+                    alert(error.message);
+                    window.location.href = '/community/posts';
+                });
+        }
+        
+        // --- 2. 게시글 삭제 로직 ---
+        function handleDelete() {
+            const password = prompt('삭제를 위해 4자리 비밀번호를 입력해주세요.');
+            if (password && password.length === 4 && /^\d+$/.test(password)) {
+                fetch(`/api/community/posts/${postId}`, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password: password })
+                })
+                .then(response => {
+                    if (response.status === 204) {
+                        alert('게시글이 삭제되었습니다.');
+                        window.location.href = '/community/posts';
+                    } else if (response.status === 401 || response.status === 403) {
+                        alert('비밀번호가 일치하지 않습니다.');
+                    } else {
+                        throw new Error('삭제 실패: ' + response.statusText);
+                    }
+                })
+                .catch(error => {
+                    console.error('삭제 오류:', error);
+                    alert('게시글 삭제 중 오류가 발생했습니다.');
+                });
+            } else if (password !== null) {
+                alert('비밀번호는 4자리 숫자여야 합니다.');
+            }
+        }
+        
+        // --- 3. 댓글 목록 로드 및 렌더링 (Tailwind 스타일로 수정)---
+        function loadComments(postId) {
+            fetch(`/api/community/posts/${postId}/comments`)
+                .then(response => {
+                    if (response.status === 204) return [];
+                    if (!response.ok) throw new Error('댓글 로드 실패');
+                    return response.json();
+                })
+                .then(comments => {
+                    const container = document.getElementById('commentsContainer');
+                    container.innerHTML = '';
+                    
+                    if (comments.length === 0) {
+                        container.innerHTML = '<li class="p-4 text-gray-500 text-center">아직 댓글이 없습니다.</li>';
+                        return;
+                    }
+                    
+                    comments.forEach(comment => {
+                        let commentHtml = `<li class="p-4 flex justify-between items-start" data-comment-id="${comment.id}">`;
+                        
+                        // 좌측: 내용 및 메타 정보
+                        commentHtml += `
+                            <div class="flex-grow">
+                                <div class="text-sm font-semibold text-gray-800">${comment.authorNickname}</div>
+                                <div class="text-gray-700 mt-1">${comment.content}
+                                    ${comment.isModified ? '<span class="text-red-500 text-xs ml-1">(수정됨)</span>' : ''}
+                                </div>
+                                <small class="text-muted text-xs text-gray-500">${new Date(comment.createdDate).toLocaleString()}</small>
+                            </div>`;
+                        
+                        // 우측: 버튼
+                        commentHtml += `
+                            <div class="flex-shrink-0 ml-4">
+                                <button onclick="handleCommentDelete(${comment.id})" class="text-xs text-red-500 hover:text-red-700 font-medium ml-2">삭제</button>
+                            </div>`;
+                                        
+                        commentHtml += `</li>`;
+                        container.innerHTML += commentHtml;
+                    });
+                })
+                .catch(error => console.error('댓글 로드 오류:', error));
+        }
+
+        // --- 4. 댓글 작성 처리 ---
+        document.getElementById('commentForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            const data = {
+                authorNickname: document.getElementById('commentNickname').value,
+                password: document.getElementById('commentPassword').value,
+                content: document.getElementById('commentContent').value
+            };
+            
+            fetch(`/api/community/posts/${postId}/comments`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(response => {
+                if (response.status === 201) {
+                    alert('댓글이 등록되었습니다.');
+                    document.getElementById('commentForm').reset();
+                    loadComments(postId);
+                } else if (response.status === 404) {
+                    alert('게시글을 찾을 수 없습니다.');
+                } else {
+                    return response.json().then(errorData => {
+                        alert('댓글 등록 실패: ' + (errorData.message || response.statusText));
+                    });
+                }
+            })
+            .catch(error => console.error('댓글 등록 오류:', error));
+        });
+
+        // --- 5. 댓글 삭제 처리 (전역 함수) ---
+        window.handleCommentDelete = function(commentId) {
+            const password = prompt('댓글 삭제를 위해 4자리 비밀번호를 입력해주세요.');
+            if (password && password.length === 4 && /^\d+$/.test(password)) {
+                fetch(`/api/community/posts/${postId}/comments/${commentId}`, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password: password })
+                })
+                .then(response => {
+                    if (response.status === 204) {
+                        alert('댓글이 삭제되었습니다.');
+                        loadComments(postId);
+                    } else if (response.status === 403) {
+                        alert('비밀번호가 일치하지 않습니다.');
+                    } else {
+                        throw new Error('삭제 실패');
+                    }
+                })
+                .catch(error => {
+                    console.error('댓글 삭제 오류:', error);
+                    alert('댓글 삭제 중 오류가 발생했습니다.');
+                });
+            } else if (password !== null) {
+                alert('비밀번호는 4자리 숫자여야 합니다.');
+            }
+        }
+        
+        loadPostDetail();
+    </script>
+</body>
+</html>

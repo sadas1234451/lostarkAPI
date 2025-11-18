@@ -11,6 +11,7 @@
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen p-8">
+<div th:replace="header :: header"></div>
     
     <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-xl">
         <h1 class="text-3xl font-bold text-gray-800 mb-6 border-b pb-2">
@@ -35,12 +36,12 @@
             </tbody>
         </table>
 
-        <div class="admin-section mt-6 flex justify-end">
+       <div class="admin-section mt-6 flex justify-end" sec:authorize="hasAuthority('ROLE_ADMIN')">
             <button 
-                onclick="location.href='/page/notice/write'"
-                class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded transition duration-150 ease-in-out"
+            onclick="location.href='/page/notice/write'"
+            class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded transition duration-150 ease-in-out"
             >
-                새 공지 작성
+            새 공지 작성
             </button>
         </div>
     </div>
@@ -49,7 +50,7 @@
         document.addEventListener('DOMContentLoaded', fetchNotices);
 
         function fetchNotices() {
-            fetch('/page/notice')
+            fetch('/api/page/notice')
                 .then(response => {
                     if (response.status === 204) {
                         return [];

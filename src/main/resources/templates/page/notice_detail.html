@@ -7,6 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 min-h-screen p-8">
+<div th:replace="header :: header"></div>
     
     <!-- 로딩 및 에러 메시지 영역 -->
     <div id="loading" class="max-w-4xl mx-auto p-6 text-center text-lg text-gray-600">
@@ -35,20 +36,28 @@
                     class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded transition duration-150 ease-in-out">
                 목록으로 돌아가기
             </button>
-            <div id="admin-actions" class="space-x-4">
-                <!-- 관리자 버튼 (수정, 삭제) 영역 - 추후 구현 예정 -->
+           <div id="admin-actions" class="space-x-4">
+                <div sec:authorize="hasAuthority('ROLE_ADMIN')">
+                    <button onclick="deleteNotice()" 
+                    class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded transition duration-150 ease-in-out">
+                    삭제
+                    </button>
+                    <button onclick="location.href='/page/notice/edit/' + noticeId" 
+                    class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded transition duration-150 ease-in-out">
+                    수정
+                    </button>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', fetchNoticeDetail);
-
+        let noticeId;
         function fetchNoticeDetail() {
             // 1. URL에서 ID 추출 (예: /page/notice/detail/123 -> ID는 123)
             const pathSegments = window.location.pathname.split('/');
-            const noticeId = pathSegments[pathSegments.length - 1];
-
+            noticeId = pathSegments[pathSegments.length - 1];
             if (!noticeId || isNaN(noticeId)) {
                 showError('잘못된 공지사항 경로입니다.');
                 return;
@@ -58,7 +67,7 @@
             const contentElement = document.getElementById('notice-content');
 
             // 2. REST API 호출: GET /page/notice/{id}
-            fetch(`/page/notice/${noticeId}`)
+            fetch(`/api/page/notice/${noticeId}`)
                 .then(response => {
                     if (response.status === 404) {
                         throw new Error('공지사항을 찾을 수 없습니다.');
@@ -97,6 +106,32 @@
             document.getElementById('notice-content').classList.add('hidden');
             loadingElement.classList.remove('hidden');
         }
+        function deleteNotice() {
+            if (!confirm('정말로 이 공지사항을 삭제하시겠습니까?')) {
+                return;
+            }
+
+            fetch(`/api/page/notice/${noticeId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert('공지사항이 성공적으로 삭제되었습니다.');
+                    window.location.href = '/page/notice'; // 목록 페이지로 이동
+                } else if (response.status === 403) {
+                    alert('권한이 없습니다. 관리자만 삭제할 수 있습니다.');
+                } else {
+                    throw new Error(`삭제 실패: ${response.status} ${response.statusText}`);
+                }
+            })
+            .catch(error => {
+                console.error('Delete Error:', error);
+                alert(`서버와의 통신 중 오류가 발생했습니다: ${error.message}`);
+            });
+        }
     </script>
 </body>
 </html>

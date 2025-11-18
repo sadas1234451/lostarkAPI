@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>자유 게시판 목록</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Tailwind CSS가 기본 스타일링을 처리하지만, 링크 색상과 커서만 추가합니다. */
+        .title-link { cursor: pointer; }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen p-8">
+    <div th:replace="header :: header"></div>
+
+    <div class="max-w-6xl mx-auto bg-white p-6 rounded-lg shadow-xl">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6 border-b pb-2">
+            자유 게시판 📢
+        </h1>
+
+        <table id="post-table" class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/12">ID</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-3/12">제목</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-2/12">작성자</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-3/12">조회수</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-3/12">작성일</th>
+                </tr>
+            </thead>
+            <tbody id="post-list" class="bg-white divide-y divide-gray-200">
+                <tr>
+                    <td colspan="5" class="px-6 py-4 text-sm text-gray-500 text-center">
+                        목록을 불러오는 중...
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="mt-6 flex justify-end">
+            <button
+            onclick="location.href='/community/posts/write'"
+            class="bg-pink-600 hover:bg-pink-700 text-white font-bold py-2 px-4 rounded transition duration-150 ease-in-out"
+            >
+            새 글 작성
+            </button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', fetchPosts);
+
+        function fetchPosts() {
+            // 💡 API 경로 변경: /api/community/posts
+            fetch('/api/community/posts')
+                .then(response => {
+                    if (response.status === 204) {
+                        return [];
+                    }
+                    if (!response.ok) {
+                        throw new Error('API 호출 중 오류 발생: ' + response.statusText);
+                    }
+                    return response.json();
+                })
+                .then(posts => {
+                    const postList = document.getElementById('post-list');
+                    postList.innerHTML = '';
+
+                    if (posts.length === 0) {
+                        const row = postList.insertRow();
+                        const cell = row.insertCell(0);
+                        cell.colSpan = 5; // 💡 컬럼 수 5개로 조정
+                        cell.textContent = "등록된 게시글이 없습니다.";
+                        cell.className = "px-6 py-4 text-sm text-gray-500 text-center";
+                        return;
+                    }
+
+                    posts.forEach(post => {
+                        const row = postList.insertRow();
+
+                        // 1. ID
+                        row.insertCell(0).textContent = post.id;
+                        row.cells[0].className = "px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900";
+
+                        // 2. 제목 (상세 조회 페이지로 이동)
+                        const titleCell = row.insertCell(1);
+                        const titleLink = document.createElement('a');
+                        
+                        // 💡 상세 조회 경로 변경: /community/posts/detail/{id}
+                        titleLink.href = `/community/posts/detail/${post.id}`; 
+                        titleLink.textContent = post.title;
+                        titleLink.className = "title-link text-indigo-600 hover:text-indigo-900";
+                        
+                        // 💡 수정됨 표시 추가
+                        if (post.modifiedDate) {
+                            const modifiedSpan = document.createElement('span');
+                            modifiedSpan.textContent = ' (수정됨)';
+                            modifiedSpan.className = 'text-xs text-red-500 font-semibold ml-1';
+                            titleLink.appendChild(modifiedSpan);
+                        }
+
+                        titleCell.appendChild(titleLink);
+                        titleCell.className = "px-6 py-4 whitespace-nowrap text-sm text-gray-700";
+
+                        // 3. 작성자 (닉네임)
+                        row.insertCell(2).textContent = post.authorNickname; // 💡 필드명 변경: authorNickname
+                        row.cells[2].className = "px-6 py-4 whitespace-nowrap text-sm text-gray-500";
+                        
+                        // 4. 조회수
+                        row.insertCell(3).textContent = post.viewCount; // 💡 조회수 추가
+                        row.cells[3].className = "px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center";
+
+                        // 5. 작성일 포맷
+                        const date = new Date(post.createdDate);
+                        row.insertCell(4).textContent = date.toLocaleDateString('ko-KR', { // 💡 인덱스 4로 변경
+                            year: 'numeric', month: '2-digit', day: '2-digit'
+                        });
+                        row.cells[4].className = "px-6 py-4 whitespace-nowrap text-sm text-gray-500";
+                    });
+                })
+                .catch(error => {
+                    console.error('게시글 로드 실패:', error);
+                    const postList = document.getElementById('post-list');
+                    postList.innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-sm text-red-600 text-center">데이터를 불러오는 중 오류가 발생했습니다. 서버 상태를 확인해 주세요.</td></tr>';
+                });
+        }
+    </script>
+</body>
+</html>
