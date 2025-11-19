@@ -1,8 +1,10 @@
 package org.embed.DBService;
 
-import org.embed.entity.CommunityPost;
-import lombok.Getter;
 import java.time.LocalDateTime;
+
+import org.embed.entity.CommunityPost;
+
+import lombok.Getter;
 
 @Getter
 public class PostResponseDto {
@@ -25,7 +27,8 @@ public class PostResponseDto {
         this.createdDate = post.getCreatedDate();
         this.modifiedDate = post.getModifiedDate();
         // 수정됨 여부 판단 로직: modifiedDate가 null이 아니면 true
-        this.isModified = post.getModifiedDate() != null;
+        this.isModified = post.getModifiedDate() != null && 
+                          !post.getModifiedDate().equals(post.getCreatedDate());
     }
 
     // 목록 조회용 생성자 (content를 제외하고 필요한 필드만 포함)
@@ -37,6 +40,6 @@ public class PostResponseDto {
         this.viewCount = viewCount;
         this.createdDate = createdDate;
         this.modifiedDate = modifiedDate;
-        this.isModified = modifiedDate != null;
+        this.isModified = modifiedDate != null && !modifiedDate.equals(createdDate);
     }
 }

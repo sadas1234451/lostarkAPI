@@ -92,12 +92,6 @@
                         titleLink.className = "title-link text-indigo-600 hover:text-indigo-900";
                         
                         // 💡 수정됨 표시 추가
-                        if (post.modifiedDate) {
-                            const modifiedSpan = document.createElement('span');
-                            modifiedSpan.textContent = ' (수정됨)';
-                            modifiedSpan.className = 'text-xs text-red-500 font-semibold ml-1';
-                            titleLink.appendChild(modifiedSpan);
-                        }
 
                         titleCell.appendChild(titleLink);
                         titleCell.className = "px-6 py-4 whitespace-nowrap text-sm text-gray-700";
