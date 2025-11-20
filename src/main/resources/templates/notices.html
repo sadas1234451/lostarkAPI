@@ -16,9 +16,10 @@
             <li th:each="notice : ${noticesList}" class="py-1 border-b border-gray-100 last:border-b-0">
                 
                <a th:href="${notice.Link}"
-                       th:text="${notice.Title}" 
-                       target="_blank" 
-                       class="text-gray-900 font-medium hover:text-blue-600 transition truncate  w-full">
+                    th:text="${notice.Title}" 
+                    target="_blank" 
+                    class="text-gray-900 font-medium hover:text-blue-600 transition truncate w-full whitespace-nowrap overflow-hidden text-ellipsis inline-block"
+>
                         공지사항 제목
                 </a>
             </li>
